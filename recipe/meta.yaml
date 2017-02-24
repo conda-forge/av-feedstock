@@ -20,7 +20,7 @@ requirements:
     - python
     - setuptools
     - cython
-    - pkg-config
+    - pkg-config  # [not win]
     - ffmpeg 2.8.*
   run:
     - python
@@ -48,3 +48,4 @@ about:
 extra:
   recipe-maintainers:
     - danielballan
+    - caspervdw
