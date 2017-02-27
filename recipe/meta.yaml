@@ -1,6 +1,6 @@
 {% set name = "av" %}
-{% set version = "0.3.1" %}
-{% set sha256 = "62fc6ea38c3b2f04fb112935ebebfdd00d94b8d32f3103e583e9bb5342f17272" %}
+{% set version = "0.3.2" %}
+{% set sha256 = "a3f06019e477378c2f20c74b8b7a6b3f3ecd9eb493883ba6db9cc3245b169297" %}
 
 package:
   name: {{ name|lower }}
@@ -13,7 +13,6 @@ source:
 
 build:
   number: 0
-  skip: True  # [win]
   script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
@@ -21,11 +20,12 @@ requirements:
     - python
     - setuptools
     - cython
-    - pkg-config
-    - ffmpeg 2.8.*
+    - pkg-config  # [not win]
+    - msinttypes  # [win and py27]
+    - ffmpeg 2.8.6
   run:
     - python
-    - ffmpeg 2.8.*
+    - ffmpeg 2.8.6
     - pillow
     - numpy
 
@@ -49,3 +49,4 @@ about:
 extra:
   recipe-maintainers:
     - danielballan
+    - caspervdw
