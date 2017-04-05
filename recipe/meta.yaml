@@ -22,6 +22,7 @@ requirements:
     - cython
     - pkg-config  # [not win]
     - msinttypes  # [win and py27]
+    - curl  # [win]
     - ffmpeg 2.8.6
   run:
     - python
