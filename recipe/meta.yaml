@@ -12,7 +12,7 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 1
+  number: 2
   script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
@@ -22,10 +22,10 @@ requirements:
     - cython
     - pkg-config  # [not win]
     - msinttypes  # [win and py27]
-    - ffmpeg 3.2.*
+    - ffmpeg 3.4.*
   run:
     - python
-    - ffmpeg 3.2.*
+    - ffmpeg 3.4.*
     - pillow
     - numpy
 
