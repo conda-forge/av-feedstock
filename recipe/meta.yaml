@@ -22,10 +22,10 @@ requirements:
     - cython
     - pkg-config  # [not win]
     - msinttypes  # [win and py27]
-    - ffmpeg 3.4.*
+    - ffmpeg 3.2.*
   run:
     - python
-    - ffmpeg 3.4.*
+    - ffmpeg 3.2.*
     - pillow
     - numpy
 
