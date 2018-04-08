@@ -1,6 +1,6 @@
 {% set name = "av" %}
-{% set version = "0.3.3" %}
-{% set sha256 = "bb6a6abcae38087efe6eb4f8b29dcfbbb7b161b3177babb89fa754d9053e901c" %}
+{% set version = "0.4.0" %}
+{% set sha256 = "25b1b403367aa5abd98d76d50a4142a99bdd6a47aaad973eb0de930237cd6139" %}
 
 package:
   name: {{ name|lower }}
@@ -12,7 +12,7 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 2
+  number: 0
   script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
@@ -22,10 +22,10 @@ requirements:
     - cython
     - pkg-config  # [not win]
     - msinttypes  # [win and py27]
-    - ffmpeg 3.4.*
+    - ffmpeg 3.2.*
   run:
     - python
-    - ffmpeg 3.4.*
+    - ffmpeg 3.2.*
     - pillow
     - numpy
 
