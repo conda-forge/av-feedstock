@@ -17,14 +17,16 @@ details as much as possible.
 Current build status
 ====================
 
-Linux: [![Circle CI](https://circleci.com/gh/conda-forge/av-feedstock.svg?style=shield)](https://circleci.com/gh/conda-forge/av-feedstock)
-OSX: [![TravisCI](https://travis-ci.org/conda-forge/av-feedstock.svg?branch=master)](https://travis-ci.org/conda-forge/av-feedstock)
-Windows: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/conda-forge/av-feedstock?svg=True)](https://ci.appveyor.com/project/conda-forge/av-feedstock/branch/master)
+[![Linux](https://img.shields.io/circleci/project/github/conda-forge/av-feedstock/master.svg?label=Linux)](https://circleci.com/gh/conda-forge/av-feedstock)
+[![OSX](https://img.shields.io/travis/conda-forge/av-feedstock/master.svg?label=macOS)](https://travis-ci.org/conda-forge/av-feedstock)
+[![Windows](https://img.shields.io/appveyor/ci/conda-forge/av-feedstock/master.svg?label=Windows)](https://ci.appveyor.com/project/conda-forge/av-feedstock/branch/master)
 
 Current release info
 ====================
-Version: [![Anaconda-Server Badge](https://anaconda.org/conda-forge/av/badges/version.svg)](https://anaconda.org/conda-forge/av)
-Downloads: [![Anaconda-Server Badge](https://anaconda.org/conda-forge/av/badges/downloads.svg)](https://anaconda.org/conda-forge/av)
+
+| Name | Downloads | Version | Platforms |
+| --- | --- | --- | --- |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-av-green.svg)](https://anaconda.org/conda-forge/av) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/av.svg)](https://anaconda.org/conda-forge/av) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/av.svg)](https://anaconda.org/conda-forge/av) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/av.svg)](https://anaconda.org/conda-forge/av) |
 
 Installing av
 =============
