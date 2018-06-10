@@ -1,6 +1,6 @@
 {% set name = "av" %}
-{% set version = "0.4.0" %}
-{% set sha256 = "25b1b403367aa5abd98d76d50a4142a99bdd6a47aaad973eb0de930237cd6139" %}
+{% set version = "0.4.1" %}
+{% set sha256 = "bf9a8d113392c6a445f424e16f9e64ac53d1db1548731e6326763d555647c24f" %}
 
 package:
   name: {{ name|lower }}
