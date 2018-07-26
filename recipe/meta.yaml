@@ -12,20 +12,22 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 0
+  number: 1
   script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
+    - pkg-config  # [not win]
+    - {{ compiler('c') }}
+  host:
     - python
     - setuptools
     - cython
-    - pkg-config  # [not win]
     - msinttypes  # [win and py27]
-    - ffmpeg 3.2.*
+    - ffmpeg
   run:
     - python
-    - ffmpeg 3.2.*
+    - ffmpeg
     - pillow
     - numpy
 
