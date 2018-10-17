@@ -1,6 +1,7 @@
 {% set name = "av" %}
-{% set version = "0.4.0" %}
-{% set sha256 = "25b1b403367aa5abd98d76d50a4142a99bdd6a47aaad973eb0de930237cd6139" %}
+{% set version = "6.0.0" %}
+{% set sha256 = "9037d73d7a812c3dc75d9cc27d03215483c9e782eae63a07142c0725c6bd2df0" %}
+{% set build_number = "0" %}
 
 package:
   name: {{ name|lower }}
@@ -12,22 +13,26 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 0
-  script: python setup.py install --single-version-externally-managed --record record.txt
+  number: {{ build_number }}
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
 
 requirements:
   build:
-    - python
-    - setuptools
-    - cython
+    - {{ compiler('c') }}
     - pkg-config  # [not win]
     - msinttypes  # [win and py27]
-    - ffmpeg 3.2.*
+  host:
+    - python
+    - pip
+    - cython
+    - numpy
+    - ffmpeg
+    - pillow
   run:
     - python
-    - ffmpeg 3.2.*
-    - pillow
     - numpy
+    - ffmpeg
+    - pillow
 
 test:
   imports:
