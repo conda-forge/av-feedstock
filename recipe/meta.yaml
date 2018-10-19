@@ -16,6 +16,9 @@ build:
   number: {{ build_number }}
   skip: True  # [win and py27]
   script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
+  run_exports:
+    # PyAV now claims to follow semantic versioning
+    - {{ pin_subpackage('av') }}
 
 requirements:
   build:
