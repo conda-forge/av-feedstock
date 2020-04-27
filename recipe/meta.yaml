@@ -1,7 +1,7 @@
 {% set name = "av" %}
-{% set version = "7.0.1" %}
-{% set sha256 = "fb13afa8967d112f3f78ee6ded1082546c32462dfdfa8dac81c9539f5bda0a83" %}
-{% set build_number = 2 %}
+{% set version = "8.0.0" %}
+{% set sha256 = "f2bcc5b3538e479df80a9cfc7edba681e6927cd89fef236b49da4e883c7e4d24" %}
+{% set build_number = 0 %}
 
 package:
   name: {{ name|lower }}
@@ -14,8 +14,8 @@ source:
 
 build:
   number: {{ build_number }}
-  skip: True  # [win and py27]
-  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
+  skip: true  # [win and py27]
+  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
   run_exports:
     # PyAV now claims to follow semantic versioning
     - {{ pin_subpackage('av') }}
@@ -46,7 +46,7 @@ about:
   home: https://github.com/mikeboers/PyAV/
   license: BSD 3-Clause
   license_file: LICENSE.txt
-  summary: 'Pythonic bindings for FFmpeg.'
+  summary: Pythonic bindings for FFmpeg.
 
   description: |
     PyAV is a Pythonic binding for FFmpeg or Libav. We aim to provide all of
