@@ -5,7 +5,7 @@ Home: https://github.com/mikeboers/PyAV/
 
 Package license: BSD 3-Clause
 
-Feedstock license: BSD 3-Clause
+Feedstock license: BSD-3-Clause
 
 Summary: Pythonic bindings for FFmpeg.
 
