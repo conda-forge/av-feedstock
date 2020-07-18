@@ -9,7 +9,7 @@ channel_targets:
 docker_image:
 - condaforge/linux-anvil-comp7
 ffmpeg:
-- '4.2'
+- '4.3'
 numpy:
 - '1.18'
 pin_run_as_build:

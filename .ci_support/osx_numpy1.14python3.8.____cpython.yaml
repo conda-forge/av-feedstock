@@ -9,7 +9,7 @@ channel_sources:
 channel_targets:
 - conda-forge main
 ffmpeg:
-- '4.2'
+- '4.3'
 macos_machine:
 - x86_64-apple-darwin13.4.0
 macos_min_version:
