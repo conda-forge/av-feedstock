@@ -44,7 +44,7 @@ test:
 
 about:
   home: https://github.com/PyAV-Org/PyAV/
-  license: BSD 3-Clause
+  license: BSD-3-Clause
   license_file: LICENSE.txt
   summary: Pythonic bindings for FFmpeg.
 
