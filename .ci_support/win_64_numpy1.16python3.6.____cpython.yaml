@@ -9,8 +9,6 @@ ffmpeg:
 numpy:
 - '1.16'
 pin_run_as_build:
-  ffmpeg:
-    max_pin: x.x
   python:
     min_pin: x.x
     max_pin: x.x
@@ -19,5 +17,5 @@ python:
 target_platform:
 - win-64
 zip_keys:
-- - numpy
-  - python
+- - python
+  - numpy
