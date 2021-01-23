@@ -1,7 +1,7 @@
 {% set name = "av" %}
-{% set version = "8.0.2" %}
-{% set sha256 = "a3bba6bf68766b8a1a057f28869c7078cf0a1ec3207c7788c2ce8fe6f6bd8267" %}
-{% set build_number = 4 %}
+{% set version = "8.0.3" %}
+{% set sha256 = "521814309c91d526b6b5c9517018aef2dd12bc3d86351037db69aa67730692b8" %}
+{% set build_number = 0 %}
 
 package:
   name: {{ name|lower }}
@@ -52,7 +52,7 @@ about:
     PyAV is a Pythonic binding for FFmpeg or Libav. We aim to provide all of
     the power and control of the underlying library, but manage the gritty
     details as much as possible.
-  doc_url: https://pyav.org/docs/develop/  
+  doc_url: https://pyav.org/docs/develop/
   dev_url: https://github.com/PyAV-Org/PyAV/
 
 extra:
