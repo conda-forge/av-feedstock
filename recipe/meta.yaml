@@ -1,21 +1,18 @@
 {% set name = "av" %}
 {% set version = "8.0.3" %}
-{% set sha256 = "521814309c91d526b6b5c9517018aef2dd12bc3d86351037db69aa67730692b8" %}
-{% set build_number = 1 %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  sha256: 521814309c91d526b6b5c9517018aef2dd12bc3d86351037db69aa67730692b8
 
 build:
-  number: {{ build_number }}
-  skip: true  # [win and py27]
-  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
+  number: 2
+  skip: true  # [win]
+  script: {{ PYTHON }} -m pip install .
   run_exports:
     # PyAV now claims to follow semantic versioning
     - {{ pin_subpackage('av') }}
@@ -28,7 +25,6 @@ requirements:
     - numpy                                  # [build_platform != target_platform]
     - {{ compiler('c') }}
     - pkg-config  # [not win]
-    - msinttypes  # [win and py27]
   host:
     - python
     - pip
