@@ -38,6 +38,12 @@ requirements:
     - pillow
 
 test:
+  requires:
+    # 2022/01/22 hmaarrfk:
+    # ffmpeg 4.4 doesn't export a symbol on OSX for some
+    # reason.
+    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115
+    - ffmpeg 4.3
   imports:
     - av
     - av.audio
