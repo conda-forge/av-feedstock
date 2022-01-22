@@ -41,6 +41,8 @@ requirements:
 test:
   imports:
     - av
+    - av.audio
+    - av.audio.fifo
 
 about:
   home: https://github.com/PyAV-Org/PyAV/
