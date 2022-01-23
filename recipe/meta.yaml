@@ -10,7 +10,7 @@ source:
   sha256: 0402169bc27e38e0f44e0e0e1854cf488337e86206b6d25d6dae2bfd7a1a0230
 
 build:
-  number: 1
+  number: 2
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     - python setup.py test                   # [build_platform == target_platform]
@@ -31,7 +31,7 @@ requirements:
     - pip
     - cython
     - numpy
-    - ffmpeg
+    - ffmpeg 4.4
     - pillow
   run:
     - python
@@ -39,12 +39,6 @@ requirements:
     - pillow
 
 test:
-  requires:
-    # 2022/01/22 hmaarrfk:
-    # ffmpeg 4.4 doesn't export a symbol on OSX for some
-    # reason.
-    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115
-    - ffmpeg 4.3
   imports:
     - av
     - av.audio
