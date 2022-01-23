@@ -10,7 +10,7 @@ source:
   sha256: 0402169bc27e38e0f44e0e0e1854cf488337e86206b6d25d6dae2bfd7a1a0230
 
 build:
-  number: 1
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     - python setup.py test                   # [build_platform == target_platform]
@@ -31,20 +31,21 @@ requirements:
     - pip
     - cython
     - numpy
-    - ffmpeg
+    # pyav seems to depend on a symbol that may have
+    # been removed in ffmpeg 4.4
+    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115#issuecomment-1019384624
+    # Because of this, we pin the minor version in the run section as well
+    # At the time of writing, pyav only tests with 4.3.2
+    # https://github.com/PyAV-Org/PyAV/blob/main/scripts/fetch-vendor.json
+    - ffmpeg 4.3
     - pillow
   run:
     - python
     - {{ pin_compatible('numpy') }}
     - pillow
+    - ffmpeg 4.3
 
 test:
-  requires:
-    # 2022/01/22 hmaarrfk:
-    # ffmpeg 4.4 doesn't export a symbol on OSX for some
-    # reason.
-    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115
-    - ffmpeg 4.3
   imports:
     - av
     - av.audio
