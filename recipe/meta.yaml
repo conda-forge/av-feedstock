@@ -1,21 +1,21 @@
-{% set name = "av" %}
-{% set version = "8.0.3" %}
-{% set sha256 = "521814309c91d526b6b5c9517018aef2dd12bc3d86351037db69aa67730692b8" %}
-{% set build_number = 0 %}
+{% set version = "8.1.0" %}
 
 package:
-  name: {{ name|lower }}
+  name: av
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  fn: av-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
+  sha256: 0402169bc27e38e0f44e0e0e1854cf488337e86206b6d25d6dae2bfd7a1a0230
 
 build:
-  number: {{ build_number }}
-  skip: true  # [win and py27]
-  script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
+  number: 0
+  script:
+    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
+    # 2022/02/06: hmaarrfk
+    # Tests don't seem to be passing on azure with ppc64le
+    - python setup.py test                   # [(build_platform == target_platform) and (not ppc64le)]
   run_exports:
     # PyAV now claims to follow semantic versioning
     - {{ pin_subpackage('av') }}
@@ -28,23 +28,30 @@ requirements:
     - numpy                                  # [build_platform != target_platform]
     - {{ compiler('c') }}
     - pkg-config  # [not win]
-    - msinttypes  # [win and py27]
   host:
     - python
     - pip
     - cython
     - numpy
-    - ffmpeg
+    # pyav seems to depend on a symbol that may have
+    # been removed in ffmpeg 4.4
+    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115#issuecomment-1019384624
+    # Because of this, we pin the minor version in the run section as well
+    # At the time of writing, pyav only tests with 4.3.2
+    # https://github.com/PyAV-Org/PyAV/blob/main/scripts/fetch-vendor.json
+    - ffmpeg 4.3
     - pillow
   run:
     - python
-    - numpy
-    - ffmpeg
+    - {{ pin_compatible('numpy') }}
     - pillow
+    - ffmpeg 4.3
 
 test:
   imports:
     - av
+    - av.audio
+    - av.audio.fifo
 
 about:
   home: https://github.com/PyAV-Org/PyAV/
@@ -62,6 +69,7 @@ about:
 extra:
   recipe-maintainers:
     - danielballan
-    - caspervdw
     - mikeboers
     - sdvillal
+    - h-vetinari
+    - hmaarrfk
