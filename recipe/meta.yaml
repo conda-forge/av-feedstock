@@ -33,19 +33,15 @@ requirements:
     - pip
     - cython
     - numpy
-    # pyav seems to depend on a symbol that may have
-    # been removed in ffmpeg 4.4
-    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115#issuecomment-1019384624
-    # Because of this, we pin the minor version in the run section as well
-    # At the time of writing, pyav only tests with 4.3.2
+    # At the time of writing, pyav only tests with 4.3.3
     # https://github.com/PyAV-Org/PyAV/blob/main/scripts/fetch-vendor.json
-    - ffmpeg 4.3
+    - ffmpeg
     - pillow
   run:
     - python
     - {{ pin_compatible('numpy') }}
     - pillow
-    - ffmpeg 4.3
+    - ffmpeg
 
 test:
   imports:
