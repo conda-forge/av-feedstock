@@ -1,4 +1,4 @@
-{% set version = "8.1.0" %}
+{% set version = "9.0.0" %}
 
 package:
   name: av
@@ -7,7 +7,7 @@ package:
 source:
   fn: av-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 0402169bc27e38e0f44e0e0e1854cf488337e86206b6d25d6dae2bfd7a1a0230
+  sha256: 785b7434542e24dff32e6d78764ccd998bb1c85a48a602a2b5c8ee0d7676fbd8
 
 build:
   number: 0
@@ -33,19 +33,15 @@ requirements:
     - pip
     - cython
     - numpy
-    # pyav seems to depend on a symbol that may have
-    # been removed in ffmpeg 4.4
-    # https://github.com/conda-forge/ffmpeg-feedstock/pull/115#issuecomment-1019384624
-    # Because of this, we pin the minor version in the run section as well
-    # At the time of writing, pyav only tests with 4.3.2
+    # At the time of writing, pyav only tests with 4.3.3
     # https://github.com/PyAV-Org/PyAV/blob/main/scripts/fetch-vendor.json
-    - ffmpeg 4.3
+    - ffmpeg
     - pillow
   run:
     - python
     - {{ pin_compatible('numpy') }}
     - pillow
-    - ffmpeg 4.3
+    - ffmpeg
 
 test:
   imports:
