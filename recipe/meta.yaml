@@ -9,6 +9,7 @@ source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
   sha256: 2016c62264a0d00aeceb0f40b62df9f9e976067ca5f3a9bdbf532fe5ec53419f
   patches:
+    # 2022/03/16 can likely be removed after version 9.0.1
     # https://github.com/PyAV-Org/PyAV/pull/881
     - 881-fix_ffmpeg44_compatibility.patch
 
