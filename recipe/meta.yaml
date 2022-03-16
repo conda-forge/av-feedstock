@@ -8,9 +8,13 @@ source:
   fn: av-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
   sha256: 2016c62264a0d00aeceb0f40b62df9f9e976067ca5f3a9bdbf532fe5ec53419f
+  patches:
+    # 2022/03/16 can likely be removed after version 9.0.1
+    # https://github.com/PyAV-Org/PyAV/pull/881
+    - 881-fix_ffmpeg44_compatibility.patch
 
 build:
-  number: 0
+  number: 1
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
@@ -33,15 +37,12 @@ requirements:
     - pip
     - cython
     - numpy
-    # At the time of writing, pyav only tests with 4.3.3
-    # https://github.com/PyAV-Org/PyAV/blob/main/scripts/fetch-vendor.json
     - ffmpeg
     - pillow
   run:
     - python
     - {{ pin_compatible('numpy') }}
     - pillow
-    - ffmpeg
 
 test:
   imports:
