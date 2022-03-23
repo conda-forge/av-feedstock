@@ -1,4 +1,4 @@
-{% set version = "9.0.1" %}
+{% set version = "9.0.2" %}
 
 package:
   name: av
@@ -7,14 +7,10 @@ package:
 source:
   fn: av-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 2016c62264a0d00aeceb0f40b62df9f9e976067ca5f3a9bdbf532fe5ec53419f
-  patches:
-    # 2022/03/16 can likely be removed after version 9.0.1
-    # https://github.com/PyAV-Org/PyAV/pull/881
-    - 881-fix_ffmpeg44_compatibility.patch
+  sha256: 49529f41c317127c671a533ddf0eb1e6733e5aeec622971147acebb2fb261c6d
 
 build:
-  number: 1
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
