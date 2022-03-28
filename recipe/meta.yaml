@@ -5,7 +5,6 @@ package:
   version: {{ version }}
 
 source:
-  fn: av-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
   sha256: 7ca72360253e511f0dc10c09fad223d4b791bcf512e5df88de2b5a1951ea01ad
 
