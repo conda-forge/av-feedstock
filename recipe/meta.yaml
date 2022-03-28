@@ -1,4 +1,4 @@
-{% set version = "9.0.2" %}
+{% set version = "9.1.0" %}
 
 package:
   name: av
@@ -7,7 +7,7 @@ package:
 source:
   fn: av-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 49529f41c317127c671a533ddf0eb1e6733e5aeec622971147acebb2fb261c6d
+  sha256: 7ca72360253e511f0dc10c09fad223d4b791bcf512e5df88de2b5a1951ea01ad
 
 build:
   number: 0
