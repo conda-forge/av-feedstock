@@ -9,7 +9,7 @@ source:
   sha256: 7ca72360253e511f0dc10c09fad223d4b791bcf512e5df88de2b5a1951ea01ad
 
 build:
-  number: 1
+  number: 2
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
