@@ -1,4 +1,4 @@
-{% set version = "9.1.1" %}
+{% set version = "9.2.0" %}
 
 package:
   name: av
@@ -6,10 +6,10 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 41b1ea2faa5970b20fe3797fdaf62fceb6e6d26d70db28dfae55bf0c8c45ac3a
+  sha256: f2a7c226724d7f7745b376b459c500d9d17bd8d0473b7ea6bf8ddb4f7957c69d
 
 build:
-  number: 1
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
