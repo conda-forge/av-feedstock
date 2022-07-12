@@ -5,7 +5,7 @@ channel_sources:
 channel_targets:
 - conda-forge main
 ffmpeg:
-- '4.3'
+- '4.4'
 numpy:
 - '1.21'
 pin_run_as_build:
