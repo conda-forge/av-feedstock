@@ -7,6 +7,8 @@ package:
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
   sha256: f2a7c226724d7f7745b376b459c500d9d17bd8d0473b7ea6bf8ddb4f7957c69d
+  patches:
+    - lgpl_tests.patch
 
 build:
   number: 2
