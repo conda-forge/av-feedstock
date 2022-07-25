@@ -9,7 +9,7 @@ source:
   sha256: f2a7c226724d7f7745b376b459c500d9d17bd8d0473b7ea6bf8ddb4f7957c69d
 
 build:
-  number: 1
+  number: 2
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
@@ -32,7 +32,7 @@ requirements:
     - pip
     - cython
     - numpy
-    - ffmpeg
+    - ffmpeg  {{ ffmpeg }}=lgpl*
     - pillow
   run:
     - python
@@ -40,6 +40,20 @@ requirements:
     - pillow
 
 test:
+  requires:
+    # The compiled pyav should be compatibile with both the GPL version of
+    # ffpmpeg and the lgpl version of ffmpeg
+    - ffmpeg *=gpl*    # [py==39]
+    - ffmpeg *=lgpl*   # [py==310]
+  commands:
+    # With the GPL version, x264 and x265 should be available
+    - python -c "import av; assert 'libx264' in av.codecs_available"       # [py==39]
+    - python -c "import av; assert 'libx265' in av.codecs_available"       # [py==39]
+    # But they won't be available if the user chooses the lgpl version
+    - python -c "import av; assert 'libx264' not in av.codecs_available"   # [py==310]
+    - python -c "import av; assert 'libx265' not in av.codecs_available"   # [py==310]
+    # openh264 should always be available from conda-forge
+    - python -c "import av; assert 'libopenh264' in av.codecs_available"
   imports:
     - av
     - av.audio
