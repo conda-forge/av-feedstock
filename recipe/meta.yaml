@@ -1,4 +1,4 @@
-{% set version = "9.2.0" %}
+{% set version = "10.0.0" %}
 
 package:
   name: av
@@ -6,12 +6,12 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: f2a7c226724d7f7745b376b459c500d9d17bd8d0473b7ea6bf8ddb4f7957c69d
+  sha256: 8afd3d5610e1086f3b2d8389d66672ea78624516912c93612de64dcaa4c67e05
   patches:
     - lgpl_tests.patch
 
 build:
-  number: 2
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
