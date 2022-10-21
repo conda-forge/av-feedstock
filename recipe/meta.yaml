@@ -34,7 +34,7 @@ requirements:
     - pip
     - cython
     - numpy
-    - ffmpeg  {{ ffmpeg }}=lgpl*
+    - ffmpeg  5=lgpl*
     - pillow
   run:
     - python
