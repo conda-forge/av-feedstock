@@ -7,7 +7,7 @@ index 7087804..24211a6 100644
  
      def test_encoding_h264(self):
 -        self.video_encoding("libx264", {"crf": "19"})
-+        self.video_encoding("libopenh264", {"crf": "19"})
++        self.video_encoding("h264", {"crf": "19"})
  
      def test_encoding_mpeg4(self):
          self.video_encoding("mpeg4")
@@ -20,7 +20,7 @@ index 7c5d035..a7dfbc6 100644
  
          with av.open(path, "w") as output:
 -            stream = output.add_stream("libx264", 24)
-+            stream = output.add_stream("libopenh264", 24)
++            stream = output.add_stream("h264", 24)
              stream.width = WIDTH
              stream.height = HEIGHT
              stream.pix_fmt = "yuv420p"
