@@ -9,6 +9,7 @@ source:
   sha256: 8afd3d5610e1086f3b2d8389d66672ea78624516912c93612de64dcaa4c67e05
   patches:
     - lgpl_tests.patch
+    - 1110-ffmpeg6.patch  # [ffmpeg==6]
 
 build:
   number: 3
