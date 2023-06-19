@@ -54,7 +54,6 @@ Related to #1106
  av/container/core.pyx            |  3 ---
  include/libavcodec/avcodec.pxd   | 10 +---------
  include/libavformat/avformat.pxd |  1 -
- scripts/activate.sh              |  2 +-
  6 files changed, 6 insertions(+), 33 deletions(-)
 
 diff --git a/av/codec/codec.pyx b/av/codec/codec.pyx
@@ -235,16 +234,3 @@ index ed3e503f..06029d9f 100644
          AVFMT_FLAG_FAST_SEEK
          AVFMT_FLAG_SHORTEST
          AVFMT_FLAG_AUTO_BSF
-diff --git a/scripts/activate.sh b/scripts/activate.sh
-index bbb44018..16726654 100755
---- a/scripts/activate.sh
-+++ b/scripts/activate.sh
-@@ -14,7 +14,7 @@ if [[ ! "$PYAV_LIBRARY" ]]; then
-     if [[ "$1" ]]; then
-         PYAV_LIBRARY="$1"
-     else
--        PYAV_LIBRARY=ffmpeg-4.2
-+        PYAV_LIBRARY=ffmpeg-6.0
-         echo "No \$PYAV_LIBRARY set; defaulting to $PYAV_LIBRARY"
-     fi
- fi
