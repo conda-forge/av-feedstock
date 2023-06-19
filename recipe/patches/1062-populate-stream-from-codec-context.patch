@@ -1,0 +1,27 @@
+From 8e581e92f7b70b9659ba5d30b454a08cdfcd7622 Mon Sep 17 00:00:00 2001
+From: Hanz <40712686+HanzCEO@users.noreply.github.com>
+Date: Sun, 25 Dec 2022 13:21:52 +0000
+Subject: [PATCH] [streams] populate added stream with codec param
+ avformat_new_stream(AVFormatContext *s, const AVCodec *c) does not use their
+ second parameter[1] So avcodec_parameters_from_context() should do the job[2]
+
+[1]: https://ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827
+[2]: https://ffmpeg.org/doxygen/trunk/codec__par_8c_source.html#l00099
+---
+ av/container/output.pyx | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/av/container/output.pyx b/av/container/output.pyx
+index a454e121..fbbee0df 100644
+--- a/av/container/output.pyx
++++ b/av/container/output.pyx
+@@ -84,6 +84,9 @@ cdef class OutputContainer(Container):
+         cdef lib.AVStream *stream = self.ptr.streams[self.ptr.nb_streams - 1]
+         cdef lib.AVCodecContext *codec_context = lib.avcodec_alloc_context3(codec)
+ 
++        # Populate AVCodecParameters in stream.codecpar
++        lib.avcodec_parameters_from_context(stream.codecpar, codec_context)
++
+         # Copy from the template.
+         if template is not None:
+             err_check(lib.avcodec_parameters_to_context(codec_context, template.ptr.codecpar))
