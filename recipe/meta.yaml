@@ -8,8 +8,13 @@ source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
   sha256: 8afd3d5610e1086f3b2d8389d66672ea78624516912c93612de64dcaa4c67e05
   patches:
-    - lgpl_tests.patch
-    - 1110-ffmpeg6.patch  # [ffmpeg==6]
+    - patches/lgpl_tests.patch
+    # https://github.com/PyAV-Org/PyAV/pull/1062
+    - patches/1062-populate-stream-from-codec-context.patch
+    # https://github.com/PyAV-Org/PyAV/pull/1067
+    - patches/1067-add-flag-encoder-flush.patch
+    # https://github.com/PyAV-Org/PyAV/pull/1110
+    - patches/1110-ffmpeg6.patch  # [ffmpeg==6]
 
 build:
   number: 3
