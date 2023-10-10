@@ -31,14 +31,14 @@ requirements:
   build:
     - python                                 # [build_platform != target_platform]
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
-    - cython                                 # [build_platform != target_platform]
+    - cython <3                              # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
     - {{ compiler('c') }}
     - pkg-config  # [not win]
   host:
     - python
     - pip
-    - cython
+    - cython <3
     - numpy
     - ffmpeg  {{ ffmpeg }}=lgpl*
     - pillow
