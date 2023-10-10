@@ -17,7 +17,7 @@ source:
     - patches/1110-ffmpeg6.patch  # [ffmpeg==6]
 
 build:
-  number: 3
+  number: 4
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
