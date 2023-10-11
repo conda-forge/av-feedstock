@@ -15,9 +15,11 @@ source:
     - patches/1067-add-flag-encoder-flush.patch
     # https://github.com/PyAV-Org/PyAV/pull/1110
     - patches/1110-ffmpeg6.patch  # [ffmpeg==6]
+    # https://github.com/PyAV-Org/PyAV/pull/1145
+    - patches/1145-cython3.patch
 
 build:
-  number: 3
+  number: 4
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
