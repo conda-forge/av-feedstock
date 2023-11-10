@@ -1,4 +1,4 @@
-{% set version = "10.0.0" %}
+{% set version = "11.0.0" %}
 
 package:
   name: av
@@ -6,20 +6,12 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 8afd3d5610e1086f3b2d8389d66672ea78624516912c93612de64dcaa4c67e05
+  sha256: 48223f000a252070f8e700ff634bb7fb3aa1b7bc7e450373029fbdd6f369ac31
   patches:
     - patches/lgpl_tests.patch
-    # https://github.com/PyAV-Org/PyAV/pull/1062
-    - patches/1062-populate-stream-from-codec-context.patch
-    # https://github.com/PyAV-Org/PyAV/pull/1067
-    - patches/1067-add-flag-encoder-flush.patch
-    # https://github.com/PyAV-Org/PyAV/pull/1110
-    - patches/1110-ffmpeg6.patch  # [ffmpeg==6]
-    # https://github.com/PyAV-Org/PyAV/pull/1145
-    - patches/1145-cython3.patch
 
 build:
-  number: 4
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
