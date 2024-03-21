@@ -32,7 +32,7 @@ index d093947..ba83a61 100644
 
          with av.open(path, "w") as output:
 -            stream = output.add_stream("h264", 24)
-+            stream = output.add_stream("libopenh264", 24)
++            stream = output.add_stream("h264", 24)
              self.assertIn(stream, output.streams.video)
              stream.width = WIDTH
              stream.height = HEIGHT
