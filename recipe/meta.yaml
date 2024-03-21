@@ -45,8 +45,8 @@ test:
   requires:
     # The compiled pyav should be compatibile with both the GPL version of
     # ffpmpeg and the lgpl version of ffmpeg
-    - ffmpeg *=gpl*    # [py==39]
-    - ffmpeg *=lgpl*   # [py==310]
+    - ffmpeg *=gpl*    # [py==311]
+    - ffmpeg *=lgpl*   # [py==312]
   commands:
     # With the GPL version, x264 and x265 should be available
     - python -c "import av; assert 'libx264' in av.codecs_available"       # [py==39]
