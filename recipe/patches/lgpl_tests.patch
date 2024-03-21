@@ -1,26 +1,40 @@
+From 748d5262c13dc49b7997e1b8a55ddbf8c8571d34 Mon Sep 17 00:00:00 2001
+From: Mark Harfouche <mark.harfouche@gmail.com>
+Date: Thu, 21 Mar 2024 08:57:12 -0400
+Subject: [PATCH] Convert h264 tests to openh264 for lgpl build
+
+---
+ tests/test_codec_context.py | 4 ++--
+ tests/test_encode.py        | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
 diff --git a/tests/test_codec_context.py b/tests/test_codec_context.py
-index ee9193c..43e827a 100644
+index 1a2b189..98af32f 100644
 --- a/tests/test_codec_context.py
 +++ b/tests/test_codec_context.py
-@@ -217,7 +217,7 @@ class TestEncoding(TestCase):
+@@ -268,8 +268,8 @@ class TestEncoding(TestCase):
+                 self.assertEqual(frame.height, height)
                  self.assertEqual(frame.format.name, pix_fmt)
- 
-     def test_encoding_h264(self):
--        self.video_encoding("libx264", {"crf": "19"})
+
+-    def test_encoding_h264(self):
+-        self.video_encoding("h264", {"crf": "19"})
++    def test_encoding_libopenh264(self):
 +        self.video_encoding("libopenh264", {"crf": "19"})
- 
+
      def test_encoding_mpeg4(self):
          self.video_encoding("mpeg4")
 diff --git a/tests/test_encode.py b/tests/test_encode.py
-index a293cbf..b3da294 100644
+index d093947..ba83a61 100644
 --- a/tests/test_encode.py
 +++ b/tests/test_encode.py
-@@ -149,7 +149,7 @@ class TestBasicVideoEncoding(TestCase):
+@@ -151,7 +151,7 @@ class TestBasicVideoEncoding(TestCase):
          path = self.sandboxed("video_with_pts.mov")
- 
+
          with av.open(path, "w") as output:
--            stream = output.add_stream("libx264", 24)
+-            stream = output.add_stream("h264", 24)
 +            stream = output.add_stream("libopenh264", 24)
              self.assertIn(stream, output.streams.video)
              stream.width = WIDTH
              stream.height = HEIGHT
+--
+2.43.2
