@@ -1,15 +1,15 @@
-From 748d5262c13dc49b7997e1b8a55ddbf8c8571d34 Mon Sep 17 00:00:00 2001
+From ff44536b7206c621da46ae856576839786889c15 Mon Sep 17 00:00:00 2001
 From: Mark Harfouche <mark.harfouche@gmail.com>
 Date: Thu, 21 Mar 2024 08:57:12 -0400
 Subject: [PATCH] Convert h264 tests to openh264 for lgpl build
 
 ---
- tests/test_codec_context.py | 4 ++--
- tests/test_encode.py        | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ tests/test_codec_context.py | 11 +++++++----
+ tests/test_encode.py        |  2 +-
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/tests/test_codec_context.py b/tests/test_codec_context.py
-index 1a2b189..98af32f 100644
+index 1a2b189..40f0aaa 100644
 --- a/tests/test_codec_context.py
 +++ b/tests/test_codec_context.py
 @@ -268,8 +268,8 @@ class TestEncoding(TestCase):
@@ -23,6 +23,20 @@ index 1a2b189..98af32f 100644
 
      def test_encoding_mpeg4(self):
          self.video_encoding("mpeg4")
+@@ -378,8 +378,11 @@ class TestEncoding(TestCase):
+         for i in decoded_gop_sizes:
+             self.assertEqual(i, gop_size)
+
+-        final_gop_size = decoded_frame_count - max(keyframe_indices)
+-        self.assertLessEqual(final_gop_size, gop_size)
++        # libopenh264 only supports a reduced subset of the features and
++        # can't actually control GOP size correctly
++        if codec_name != "libopenh264":
++            final_gop_size = decoded_frame_count - max(keyframe_indices)
++            self.assertLessEqual(final_gop_size, gop_size)
+
+     def test_encoding_pcm_s24le(self):
+         self.audio_encoding("pcm_s24le")
 diff --git a/tests/test_encode.py b/tests/test_encode.py
 index d093947..ba83a61 100644
 --- a/tests/test_encode.py
@@ -32,7 +46,7 @@ index d093947..ba83a61 100644
 
          with av.open(path, "w") as output:
 -            stream = output.add_stream("h264", 24)
-+            stream = output.add_stream("h264", 24)
++            stream = output.add_stream("libopenh264", 24)
              self.assertIn(stream, output.streams.video)
              stream.width = WIDTH
              stream.height = HEIGHT
