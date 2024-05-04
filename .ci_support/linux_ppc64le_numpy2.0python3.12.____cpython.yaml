@@ -13,7 +13,7 @@ docker_image:
 ffmpeg:
 - '6'
 numpy:
-- '1.26'
+- '2.0'
 pin_run_as_build:
   python:
     min_pin: x.x

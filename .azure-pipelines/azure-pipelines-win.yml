@@ -23,8 +23,8 @@ jobs:
       win_64_numpy1.23python3.11.____cpython:
         CONFIG: win_64_numpy1.23python3.11.____cpython
         UPLOAD_PACKAGES: 'True'
-      win_64_numpy1.26python3.12.____cpython:
-        CONFIG: win_64_numpy1.26python3.12.____cpython
+      win_64_numpy2.0python3.12.____cpython:
+        CONFIG: win_64_numpy2.0python3.12.____cpython
         UPLOAD_PACKAGES: 'True'
   timeoutInMinutes: 360
   variables:
