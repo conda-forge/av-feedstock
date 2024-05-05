@@ -1,4 +1,4 @@
-{% set version = "11.0.0" %}
+{% set version = "12.0.0" %}
 
 package:
   name: av
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 48223f000a252070f8e700ff634bb7fb3aa1b7bc7e450373029fbdd6f369ac31
+  sha256: bcf21ebb722d4538b4099e5a78f730d78814dd70003511c185941dba5651b14d
   patches:
     - patches/lgpl_tests.patch
 
@@ -28,6 +28,7 @@ requirements:
     - cython                                 # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - pkg-config  # [not win]
   host:
     - python
@@ -45,15 +46,15 @@ test:
   requires:
     # The compiled pyav should be compatibile with both the GPL version of
     # ffpmpeg and the lgpl version of ffmpeg
-    - ffmpeg *=gpl*    # [py==39]
-    - ffmpeg *=lgpl*   # [py==310]
+    - ffmpeg *=gpl*    # [py==311]
+    - ffmpeg *=lgpl*   # [py==312]
   commands:
     # With the GPL version, x264 and x265 should be available
-    - python -c "import av; assert 'libx264' in av.codecs_available"       # [py==39]
-    - python -c "import av; assert 'libx265' in av.codecs_available"       # [py==39]
+    - python -c "import av; assert 'libx264' in av.codecs_available"       # [py==311]
+    - python -c "import av; assert 'libx265' in av.codecs_available"       # [py==311]
     # But they won't be available if the user chooses the lgpl version
-    - python -c "import av; assert 'libx264' not in av.codecs_available"   # [py==310]
-    - python -c "import av; assert 'libx265' not in av.codecs_available"   # [py==310]
+    - python -c "import av; assert 'libx264' not in av.codecs_available"   # [py==312]
+    - python -c "import av; assert 'libx265' not in av.codecs_available"   # [py==312]
     # openh264 should always be available from conda-forge
     - python -c "import av; assert 'libopenh264' in av.codecs_available"
   imports:
