@@ -1,4 +1,4 @@
-{% set version = "12.0.0" %}
+{% set version = "12.1.0" %}
 
 package:
   name: av
@@ -6,12 +6,12 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: bcf21ebb722d4538b4099e5a78f730d78814dd70003511c185941dba5651b14d
+  sha256: 67adab9fdabcb8a86bd542787196580e38ed4132331ee9e82234b23cea9546b3
   patches:
     - patches/lgpl_tests.patch
 
 build:
-  number: 1
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
     # 2022/02/06: hmaarrfk
@@ -28,7 +28,7 @@ requirements:
     - cython                                 # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
     - {{ compiler('c') }}
-    - {{ stdlib("c") }}
+    - {{ stdlib('c') }}
     - pkg-config  # [not win]
   host:
     - python
