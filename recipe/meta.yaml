@@ -11,9 +11,8 @@ source:
     - patches/lgpl_tests.patch
 
 build:
-  number: 1
-  script:
-    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv
   run_exports:
     # PyAV now claims to follow semantic versioning
     - {{ pin_subpackage('av') }}
