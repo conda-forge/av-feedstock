@@ -9,6 +9,8 @@ source:
   sha256: 7fb1a5588cd8ce4d0564ddf82221f886541ea2d5152f15e63ab890430dcd3c31
   patches:
     - patches/lgpl_tests.patch
+    # https://github.com/PyAV-Org/PyAV/pull/1517
+    - patches/1517.patch
 
 build:
   number: 0
