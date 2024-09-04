@@ -36,6 +36,7 @@ requirements:
   run:
     - python
     - pillow
+    - numpy >=1.22
 
 test:
   requires:
