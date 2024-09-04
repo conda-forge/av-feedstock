@@ -38,6 +38,8 @@ requirements:
     - numpy >=1.22
 
 test:
+  source_files:
+    - tests
   requires:
     # The compiled pyav should be compatibile with both the GPL version of
     # ffpmpeg and the lgpl version of ffmpeg
@@ -52,6 +54,9 @@ test:
     - python -c "import av; assert 'libx265' not in av.codecs_available"   # [py==312]
     # openh264 should always be available from conda-forge
     - python -c "import av; assert 'libopenh264' in av.codecs_available"
+    # Follow thei rtest commands from
+    # https://github.com/PyAV-Org/PyAV/blob/main/.github/workflows/tests.yml#L72
+    - python -m unittest discover -t av -s tests
   imports:
     - av
     - av.audio
