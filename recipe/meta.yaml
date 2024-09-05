@@ -14,7 +14,12 @@ source:
 
 build:
   number: 0
-  script: {{ PYTHON }} -m pip install . -vv
+  script:
+    # incompatible pointer types (like the one described in https://github.com/PyAV-Org/PyAV/pull/1517)
+    # make it impossible to compile for OSX with FFMPEG6 and FFMPEG7
+    - export CFLAGS="$CFLAGS -Wno-incompatible-function-pointer-types"       # [osx]
+    - export CXXFLAGS="$CXXFLAGS -Wno-incompatible-function-pointer-types"   # [osx]
+    - {{ PYTHON }} -m pip install . -vv
   run_exports:
     # PyAV now claims to follow semantic versioning
     - {{ pin_subpackage('av') }}
@@ -38,6 +43,12 @@ requirements:
     - python
     - pillow
     - numpy >=1.22
+
+{% set tests_to_skip = "_not_a_real_test" %}
+# hmaarrfk - 2024/09
+# Seems like this test fails with ppc64le when using emulation (not tested natively)
+{% set tests_to_skip = tests_to_skip + " or test_generator_graph" %}              # [ppc64le]
+{% set tests_to_skip = tests_to_skip + " or test_reformat_pixel_format_align" %}  # [ppc64le]
 
 test:
   source_files:
