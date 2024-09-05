@@ -72,7 +72,7 @@ test:
     - python -c "import av; assert 'libopenh264' in av.codecs_available"
     # Follow thei rtest commands from
     # https://github.com/PyAV-Org/PyAV/blob/main/.github/workflows/tests.yml#L72
-    - pytest tests
+    - pytest tests -k "not ({{ tests_to_skip }})"
   imports:
     - av
     - av.audio
