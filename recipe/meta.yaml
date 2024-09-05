@@ -11,6 +11,8 @@ source:
     - patches/lgpl_tests.patch
     # https://github.com/PyAV-Org/PyAV/pull/1517
     - patches/1517.patch
+    # https://github.com/PyAV-Org/PyAV/discussions/1518#discussioncomment-10551786
+    - patches/ffmpeg6_compatibility.patch  # [ffmpeg<7]
 
 build:
   number: 0
@@ -19,8 +21,6 @@ build:
     # make it impossible to compile for OSX with FFMPEG6 and FFMPEG7
     - export CFLAGS="$CFLAGS -Wno-incompatible-function-pointer-types"       # [osx]
     - export CXXFLAGS="$CXXFLAGS -Wno-incompatible-function-pointer-types"   # [osx]
-    # https://github.com/PyAV-Org/PyAV/discussions/1518#discussioncomment-10551786
-    - {{ PYTHON }} scripts/comptime.py 6  # [ffmpeg<7]
     - {{ PYTHON }} -m pip install . -vv
   run_exports:
     # PyAV now claims to follow semantic versioning
