@@ -1,0 +1,36 @@
+From b40c281e48ad637c0ecf40f2730580e27bea62ae Mon Sep 17 00:00:00 2001
+From: Mark Harfouche <mark.harfouche@gmail.com>
+Date: Wed, 4 Sep 2024 18:18:14 -0400
+Subject: [PATCH] Declare write_packet function as const
+
+Otherwise llvm 17 complains
+
+```
+_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placeh/include/python3.11 -c src/av/container/pyio.c -o build/temp.macosx-10.9-x86_64-cpython-311/src/av/container/pyio.o
+  src/av/container/pyio.c:3329:157: error: incompatible function pointer types passing 'int (void *, const uint8_t *, int)' (aka 'int (void *, const unsigned char *, int)') to parameter of type 'int (*)(void *, uint8_t *, int)' (aka 'int (*)(void *, unsigned char *, int)') [-Wincompatible-function-pointer-types]
+   3329 |   __pyx_v_self->iocontext = avio_alloc_context(__pyx_v_self->buffer, __pyx_t_9, __pyx_t_10, ((void *)__pyx_v_self), __pyx_f_2av_9container_4pyio_pyio_read, __pyx_f_2av_9container_4pyio_pyio_write, __pyx_v_seek_func);
+        |                                                                                                                                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  /Users/runner/miniforge3/conda-bld/av_1725460421270/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placeh/include/libavformat/avio.h:420:25: note: passing argument to parameter 'write_packet' here
+    420 |                   int (*write_packet)(void *opaque, uint8_t *buf, int buf_size),
+        |                         ^
+  1 error generated.
+  error: command '/Users/runner/miniforge3/conda-bld/av_1725460421270/_build_env/bin/x86_64-apple-darwin13.4.0-clang' failed with exit code 1
+  error: subprocess-exited-with-error
+```
+---
+ include/libavformat/avformat.pxd | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/libavformat/avformat.pxd b/include/libavformat/avformat.pxd
+index 195134970..1e16378bf 100644
+--- a/include/libavformat/avformat.pxd
++++ b/include/libavformat/avformat.pxd
+@@ -79,7 +79,7 @@ cdef extern from "libavformat/avformat.h" nogil:
+         int write_flag,
+         void *opaque,
+         int(*read_packet)(void *opaque, uint8_t *buf, int buf_size),
+-        int(*write_packet)(void *opaque, uint8_t *buf, int buf_size),
++        int(*write_packet)(void *opaque, const uint8_t *buf, int buf_size),
+         int64_t(*seek)(void *opaque, int64_t offset, int whence)
+     )
+ 

@@ -1,4 +1,4 @@
-{% set version = "12.3.0" %}
+{% set version = "13.0.0" %}
 
 package:
   name: av
@@ -6,17 +6,22 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 04b1892562aff3277efc79f32bd8f1d0cbb64ed011241cb3e96f9ad471816c22
+  sha256: 7fb1a5588cd8ce4d0564ddf82221f886541ea2d5152f15e63ab890430dcd3c31
   patches:
     - patches/lgpl_tests.patch
+    # https://github.com/PyAV-Org/PyAV/pull/1517
+    - patches/1517.patch
+    # https://github.com/PyAV-Org/PyAV/discussions/1518#discussioncomment-10551786
+    - patches/ffmpeg6_compatibility.patch  # [ffmpeg<7]
 
 build:
   number: 0
   script:
-    - {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
-    # 2022/02/06: hmaarrfk
-    # Tests don't seem to be passing on azure with ppc64le
-    - python setup.py test                   # [(build_platform == target_platform) and (not ppc64le)]
+    # incompatible pointer types (like the one described in https://github.com/PyAV-Org/PyAV/pull/1517)
+    # make it impossible to compile for OSX with FFMPEG6 and FFMPEG7
+    - export CFLAGS="$CFLAGS -Wno-incompatible-function-pointer-types"       # [osx]
+    - export CXXFLAGS="$CXXFLAGS -Wno-incompatible-function-pointer-types"   # [osx]
+    - {{ PYTHON }} -m pip install . -vv
   run_exports:
     # PyAV now claims to follow semantic versioning
     - {{ pin_subpackage('av') }}
@@ -36,17 +41,26 @@ requirements:
     - cython
     - numpy
     - ffmpeg  {{ ffmpeg }}=lgpl*
-    - pillow
   run:
     - python
     - pillow
+    - numpy >=1.22
+
+{% set tests_to_skip = "_not_a_real_test" %}
+# hmaarrfk - 2024/09
+# Seems like this test fails with ppc64le when using emulation (not tested natively)
+{% set tests_to_skip = tests_to_skip + " or test_generator_graph" %}              # [ppc64le]
+{% set tests_to_skip = tests_to_skip + " or test_reformat_pixel_format_align" %}  # [ppc64le]
 
 test:
+  source_files:
+    - tests
   requires:
     # The compiled pyav should be compatibile with both the GPL version of
     # ffpmpeg and the lgpl version of ffmpeg
     - ffmpeg *=gpl*    # [py==311]
     - ffmpeg *=lgpl*   # [py==312]
+    - pytest
   commands:
     # With the GPL version, x264 and x265 should be available
     - python -c "import av; assert 'libx264' in av.codecs_available"       # [py==311]
@@ -56,6 +70,9 @@ test:
     - python -c "import av; assert 'libx265' not in av.codecs_available"   # [py==312]
     # openh264 should always be available from conda-forge
     - python -c "import av; assert 'libopenh264' in av.codecs_available"
+    # Follow thei rtest commands from
+    # https://github.com/PyAV-Org/PyAV/blob/main/.github/workflows/tests.yml#L72
+    - pytest tests -k "not ({{ tests_to_skip }})"
   imports:
     - av
     - av.audio
