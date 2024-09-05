@@ -47,6 +47,7 @@ test:
     # ffpmpeg and the lgpl version of ffmpeg
     - ffmpeg *=gpl*    # [py==311]
     - ffmpeg *=lgpl*   # [py==312]
+    - pytest
   commands:
     # With the GPL version, x264 and x265 should be available
     - python -c "import av; assert 'libx264' in av.codecs_available"       # [py==311]
@@ -58,7 +59,7 @@ test:
     - python -c "import av; assert 'libopenh264' in av.codecs_available"
     # Follow thei rtest commands from
     # https://github.com/PyAV-Org/PyAV/blob/main/.github/workflows/tests.yml#L72
-    - python -m unittest discover -t av -s tests
+    - pytest tests
   imports:
     - av
     - av.audio
