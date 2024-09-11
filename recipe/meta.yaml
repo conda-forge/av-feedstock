@@ -15,7 +15,7 @@ source:
     - patches/ffmpeg6_compatibility.patch  # [ffmpeg<7]
 
 build:
-  number: 0
+  number: 1
   script:
     # incompatible pointer types (like the one described in https://github.com/PyAV-Org/PyAV/pull/1517)
     # make it impossible to compile for OSX with FFMPEG6 and FFMPEG7
