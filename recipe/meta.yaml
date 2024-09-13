@@ -38,6 +38,7 @@ requirements:
   host:
     - python
     - pip
+    - setuptools
     - cython
     - numpy
     - ffmpeg  {{ ffmpeg }}=lgpl*
