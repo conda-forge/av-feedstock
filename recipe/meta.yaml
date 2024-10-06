@@ -1,4 +1,4 @@
-{% set version = "13.0.0" %}
+{% set version = "13.1.0" %}
 
 package:
   name: av
@@ -6,16 +6,14 @@ package:
 
 source:
   url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 7fb1a5588cd8ce4d0564ddf82221f886541ea2d5152f15e63ab890430dcd3c31
+  sha256: d3da736c55847d8596eb8c26c60e036f193001db3bc5c10da8665622d906c17e
   patches:
     - patches/lgpl_tests.patch
-    # https://github.com/PyAV-Org/PyAV/pull/1517
-    - patches/1517.patch
     # https://github.com/PyAV-Org/PyAV/discussions/1518#discussioncomment-10551786
     - patches/ffmpeg6_compatibility.patch  # [ffmpeg<7]
 
 build:
-  number: 1
+  number: 0
   script:
     # incompatible pointer types (like the one described in https://github.com/PyAV-Org/PyAV/pull/1517)
     # make it impossible to compile for OSX with FFMPEG6 and FFMPEG7
