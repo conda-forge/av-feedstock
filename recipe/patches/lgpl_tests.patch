@@ -1,4 +1,4 @@
-From ff44536b7206c621da46ae856576839786889c15 Mon Sep 17 00:00:00 2001
+From c769b2cd0710f11cdd85f3a6f67ede5b8f54ae77 Mon Sep 17 00:00:00 2001
 From: Mark Harfouche <mark.harfouche@gmail.com>
 Date: Thu, 21 Mar 2024 08:57:12 -0400
 Subject: [PATCH] Convert h264 tests to openh264 for lgpl build
@@ -9,46 +9,46 @@ Subject: [PATCH] Convert h264 tests to openh264 for lgpl build
  2 files changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/tests/test_codec_context.py b/tests/test_codec_context.py
-index 1a2b189..40f0aaa 100644
+index 6425c4d..27166e5 100644
 --- a/tests/test_codec_context.py
 +++ b/tests/test_codec_context.py
-@@ -268,8 +268,8 @@ class TestEncoding(TestCase):
-                 self.assertEqual(frame.height, height)
-                 self.assertEqual(frame.format.name, pix_fmt)
-
--    def test_encoding_h264(self):
+@@ -278,8 +278,8 @@ class TestEncoding(TestCase):
+                 assert frame.height == height
+                 assert frame.format.name == pix_fmt
+ 
+-    def test_encoding_h264(self) -> None:
 -        self.video_encoding("h264", {"crf": "19"})
 +    def test_encoding_libopenh264(self):
 +        self.video_encoding("libopenh264", {"crf": "19"})
-
-     def test_encoding_mpeg4(self):
+ 
+     def test_encoding_mpeg4(self) -> None:
          self.video_encoding("mpeg4")
-@@ -378,8 +378,11 @@ class TestEncoding(TestCase):
+@@ -395,8 +395,11 @@ class TestEncoding(TestCase):
          for i in decoded_gop_sizes:
-             self.assertEqual(i, gop_size)
-
+             assert i == gop_size
+ 
 -        final_gop_size = decoded_frame_count - max(keyframe_indices)
--        self.assertLessEqual(final_gop_size, gop_size)
+-        assert final_gop_size < gop_size
 +        # libopenh264 only supports a reduced subset of the features and
 +        # can't actually control GOP size correctly
 +        if codec_name != "libopenh264":
 +            final_gop_size = decoded_frame_count - max(keyframe_indices)
 +            self.assertLessEqual(final_gop_size, gop_size)
-
-     def test_encoding_pcm_s24le(self):
+ 
+     def test_encoding_pcm_s24le(self) -> None:
          self.audio_encoding("pcm_s24le")
 diff --git a/tests/test_encode.py b/tests/test_encode.py
-index d093947..ba83a61 100644
+index 89d2e3e..4448329 100644
 --- a/tests/test_encode.py
 +++ b/tests/test_encode.py
-@@ -151,7 +151,7 @@ class TestBasicVideoEncoding(TestCase):
+@@ -140,7 +140,7 @@ class TestBasicVideoEncoding(TestCase):
          path = self.sandboxed("video_with_pts.mov")
-
+ 
          with av.open(path, "w") as output:
 -            stream = output.add_stream("h264", 24)
 +            stream = output.add_stream("libopenh264", 24)
-             self.assertIn(stream, output.streams.video)
+             assert stream in output.streams.video
              stream.width = WIDTH
              stream.height = HEIGHT
---
-2.43.2
+-- 
+2.46.2
