@@ -1,24 +1,20 @@
-{% set version = "13.1.0" %}
+{% set version = "14.0.0" %}
 
 package:
   name: av
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: d3da736c55847d8596eb8c26c60e036f193001db3bc5c10da8665622d906c17e
+  url: https://pypi.org/packages/source/a/av/av-{{ version }}.tar.gz
+  sha256: 9dc5f2deca3f2dffdc08d3258855ce85e80335450e93e58cec0fff364fcbd69d
   patches:
     - patches/lgpl_tests.patch
-    # https://github.com/PyAV-Org/PyAV/discussions/1518#discussioncomment-10551786
-    - patches/ffmpeg6_compatibility.patch  # [ffmpeg<7]
+    # https://github.com/PyAV-Org/PyAV/pull/1662
+    - patches/fix_missing_header.patch
 
 build:
   number: 0
   script:
-    # incompatible pointer types (like the one described in https://github.com/PyAV-Org/PyAV/pull/1517)
-    # make it impossible to compile for OSX with FFMPEG6 and FFMPEG7
-    - export CFLAGS="$CFLAGS -Wno-incompatible-function-pointer-types"       # [osx]
-    - export CXXFLAGS="$CXXFLAGS -Wno-incompatible-function-pointer-types"   # [osx]
     - {{ PYTHON }} -m pip install . -vv
   run_exports:
     # PyAV now claims to follow semantic versioning

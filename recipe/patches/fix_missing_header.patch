@@ -1,0 +1,20 @@
+diff --git a/av/filter/loudnorm_impl.h b/av/filter/loudnorm_impl.h
+new file mode 100644
+index 0000000..7357e46
+--- /dev/null
++++ av/filter/loudnorm_impl.h
+@@ -0,0 +1,12 @@
++#ifndef AV_FILTER_LOUDNORM_H
++#define AV_FILTER_LOUDNORM_H
++
++#include <libavcodec/avcodec.h>
++
++char* loudnorm_get_stats(
++    AVFormatContext* fmt_ctx,
++    int audio_stream_index,
++    const char* loudnorm_args
++);
++
++#endif // AV_FILTER_LOUDNORM_H
+\ No newline at end of file
+
