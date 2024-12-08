@@ -9,8 +9,6 @@ source:
   sha256: 2b0a17301af469ddaea46b5c1c982df1b7b5de8bc6c94cdc98cad4a67178c82a
   patches:
     - patches/lgpl_tests.patch
-    # https://github.com/PyAV-Org/PyAV/pull/1662
-    - patches/fix_missing_header.patch
 
 build:
   number: 0
