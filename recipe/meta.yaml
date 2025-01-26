@@ -1,4 +1,4 @@
-{% set version = "14.0.1" %}
+{% set version = "14.1.0" %}
 
 package:
   name: av
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 2b0a17301af469ddaea46b5c1c982df1b7b5de8bc6c94cdc98cad4a67178c82a
+  sha256: 81a0185af0237016049c2b1560d51d5895ef56763ea7ebab939baa7b6b87e6f7
   patches:
     - patches/lgpl_tests.patch
 
