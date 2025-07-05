@@ -9,6 +9,7 @@ source:
   sha256: 871c1a9becddf00b60b1294dc0bff9ff193ac31286aeec1a34039bd27e650183
   patches:
     - patches/lgpl_tests.patch
+    - patches/remove_checks_in_setup.patch
 
 build:
   number: 0
