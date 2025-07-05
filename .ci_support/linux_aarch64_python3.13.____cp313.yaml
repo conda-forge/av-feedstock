@@ -17,15 +17,12 @@ docker_image:
 ffmpeg:
 - '7'
 numpy:
-- '2.0'
+- '2'
 pin_run_as_build:
   python:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.12.* *_cpython
+- 3.13.* *_cp313
 target_platform:
-- linux-ppc64le
-zip_keys:
-- - python
-  - numpy
+- linux-aarch64
