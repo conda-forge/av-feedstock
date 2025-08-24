@@ -1,0 +1,250 @@
+From 5e7acef8433ae4b360ad02903ccf164f8e363152 Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Sat, 23 Aug 2025 12:23:26 -0400
+Subject: [PATCH] Build with ffmpeg 8
+
+---
+ .github/workflows/smoke.yml                  |  8 ++++----
+ av/codec/codec.pyx                           |  1 -
+ av/codec/context.pyx                         |  6 +++---
+ av/container/core.pyx                        |  1 -
+ av/filter/filter.pyi                         |  1 -
+ av/filter/filter.pyx                         |  4 ----
+ av/format.pyx                                |  1 -
+ include/libavcodec/avcodec.pxd               | 10 +++-------
+ include/libavfilter/avfilter.pxd             |  8 ++------
+ include/libavformat/avformat.pxd             |  2 --
+ scripts/activate.sh                          |  2 +-
+ scripts/{ffmpeg-7.0.json => ffmpeg-8.0.json} |  4 ++--
+ 12 files changed, 15 insertions(+), 33 deletions(-)
+ rename scripts/{ffmpeg-7.0.json => ffmpeg-8.0.json} (61%)
+
+diff --git a/.github/workflows/smoke.yml b/.github/workflows/smoke.yml
+index d6637ce62..3c355a949 100644
+--- a/.github/workflows/smoke.yml
++++ b/.github/workflows/smoke.yml
+@@ -34,9 +34,9 @@ jobs:
+       fail-fast: false
+       matrix:
+         config:
+-          - {os: ubuntu-24.04, python: "3.12", ffmpeg: "7.1.1", extras: true}
+-          - {os: ubuntu-24.04, python: "pypy3.10", ffmpeg: "7.1.1"}
+-          - {os: macos-14, python: "3.9", ffmpeg: "7.1.1"}
++          - {os: ubuntu-24.04, python: "3.12", ffmpeg: "8.0", extras: true}
++          - {os: ubuntu-24.04, python: "pypy3.10", ffmpeg: "8.0"}
++          - {os: macos-14, python: "3.9", ffmpeg: "8.0"}
+ 
+     env:
+       PYAV_PYTHON: python${{ matrix.config.python }}
+@@ -109,7 +109,7 @@ jobs:
+       fail-fast: false
+       matrix:
+         config:
+-          - {os: windows-latest, python: "3.9", ffmpeg: "7.1"}
++          - {os: windows-latest, python: "3.9", ffmpeg: "8.0"}
+ 
+     steps:
+     - name: Checkout
+diff --git a/av/codec/codec.pyx b/av/codec/codec.pyx
+index a28db758e..aeab61cc3 100644
+--- a/av/codec/codec.pyx
++++ b/av/codec/codec.pyx
+@@ -36,7 +36,6 @@ class Capabilities(IntEnum):
+     delay = lib.AV_CODEC_CAP_DELAY
+     small_last_frame = lib.AV_CODEC_CAP_SMALL_LAST_FRAME
+     hwaccel_vdpau = 1 << 7
+-    subframes = lib.AV_CODEC_CAP_SUBFRAMES
+     experimental = lib.AV_CODEC_CAP_EXPERIMENTAL
+     channel_conf = lib.AV_CODEC_CAP_CHANNEL_CONF
+     neg_linesizes = 1 << 11
+diff --git a/av/codec/context.pyx b/av/codec/context.pyx
+index 49087e779..1d9c412b2 100644
+--- a/av/codec/context.pyx
++++ b/av/codec/context.pyx
+@@ -494,7 +494,7 @@ cdef class CodecContext:
+         # the codec itself. So use the descriptor here.
+         desc = self.codec.desc
+         cdef int i = 0
+-        while desc.profiles[i].profile != lib.FF_PROFILE_UNKNOWN:
++        while desc.profiles[i].profile != lib.AV_PROFILE_UNKNOWN: 
+             ret.append(desc.profiles[i].name)
+             i += 1
+ 
+@@ -509,7 +509,7 @@ cdef class CodecContext:
+         # the codec itself. So use the descriptor here.
+         desc = self.codec.desc
+         cdef int i = 0
+-        while desc.profiles[i].profile != lib.FF_PROFILE_UNKNOWN:
++        while desc.profiles[i].profile != lib.AV_PROFILE_UNKNOWN: 
+             if desc.profiles[i].profile == self.ptr.profile:
+                 return desc.profiles[i].name
+             i += 1
+@@ -523,7 +523,7 @@ cdef class CodecContext:
+         # the codec itself. So use the descriptor here.
+         desc = self.codec.desc
+         cdef int i = 0
+-        while desc.profiles[i].profile != lib.FF_PROFILE_UNKNOWN:
++        while desc.profiles[i].profile != lib.AV_PROFILE_UNKNOWN:
+             if desc.profiles[i].name == value:
+                 self.ptr.profile = desc.profiles[i].profile
+                 return
+diff --git a/av/container/core.pyx b/av/container/core.pyx
+index 2b9a1244b..d8950c76f 100755
+--- a/av/container/core.pyx
++++ b/av/container/core.pyx
+@@ -138,7 +138,6 @@ class Flags(Flag):
+     bitexact: "When muxing, try to avoid writing any random/volatile data to the output. This includes any random IDs, real-time timestamps/dates, muxer version, etc. This flag is mainly intended for testing." = lib.AVFMT_FLAG_BITEXACT
+     sort_dts: "Try to interleave outputted packets by dts (using this flag can slow demuxing down)." = lib.AVFMT_FLAG_SORT_DTS
+     fast_seek: "Enable fast, but inaccurate seeks for some formats." = lib.AVFMT_FLAG_FAST_SEEK
+-    shortest: "Stop muxing when the shortest stream stops." = lib.AVFMT_FLAG_SHORTEST
+     auto_bsf: "Add bitstream filters as requested by the muxer." = lib.AVFMT_FLAG_AUTO_BSF
+ 
+ class AudioCodec(IntEnum):
+diff --git a/av/filter/filter.pyi b/av/filter/filter.pyi
+index e9f9737f3..f07f317fc 100644
+--- a/av/filter/filter.pyi
++++ b/av/filter/filter.pyi
+@@ -7,7 +7,6 @@ class Filter:
+     descriptor: Descriptor
+     options: tuple[Option, ...] | None
+     flags: int
+-    command_support: bool
+ 
+     def __init__(self, name: str) -> None: ...
+ 
+diff --git a/av/filter/filter.pyx b/av/filter/filter.pyx
+index d66b2e46a..b6e7005f0 100644
+--- a/av/filter/filter.pyx
++++ b/av/filter/filter.pyx
+@@ -47,10 +47,6 @@ cdef class Filter:
+     def flags(self):
+         return self.ptr.flags
+ 
+-    @property
+-    def command_support(self):
+-        return self.ptr.process_command != NULL
+-
+     @property
+     def inputs(self):
+         if self._inputs is None:
+diff --git a/av/format.pyx b/av/format.pyx
+index 464e34f49..2eb386649 100644
+--- a/av/format.pyx
++++ b/av/format.pyx
+@@ -31,7 +31,6 @@ class Flags(Flag):
+     no_bin_search: "Format does not allow to fall back on binary search via read_timestamp" = lib.AVFMT_NOBINSEARCH
+     no_gen_search: "Format does not allow to fall back on generic search" = lib.AVFMT_NOGENSEARCH
+     no_byte_seek: "Format does not allow seeking by bytes" = lib.AVFMT_NO_BYTE_SEEK
+-    allow_flush: "Format allows flushing. If not set, the muxer will not receive a NULL packet in the write_packet function." = lib.AVFMT_ALLOW_FLUSH
+     ts_nonstrict: "Format does not require strictly increasing timestamps, but they must still be monotonic." = lib.AVFMT_TS_NONSTRICT
+     ts_negative: "Format allows muxing negative timestamps." = lib.AVFMT_TS_NEGATIVE
+     # If not set the timestamp will be shifted in `av_write_frame()` and `av_interleaved_write_frame()`
+diff --git a/include/libavcodec/avcodec.pxd b/include/libavcodec/avcodec.pxd
+index 134ae6f07..2bce8c2c1 100644
+--- a/include/libavcodec/avcodec.pxd
++++ b/include/libavcodec/avcodec.pxd
+@@ -80,14 +80,10 @@ cdef extern from "libavcodec/avcodec.h" nogil:
+     cdef enum:
+         AV_CODEC_CAP_DRAW_HORIZ_BAND
+         AV_CODEC_CAP_DR1
+-        # AV_CODEC_CAP_HWACCEL
+         AV_CODEC_CAP_DELAY
+         AV_CODEC_CAP_SMALL_LAST_FRAME
+-        # AV_CODEC_CAP_HWACCEL_VDPAU
+-        AV_CODEC_CAP_SUBFRAMES
+         AV_CODEC_CAP_EXPERIMENTAL
+         AV_CODEC_CAP_CHANNEL_CONF
+-        # AV_CODEC_CAP_NEG_LINESIZES
+         AV_CODEC_CAP_FRAME_THREADS
+         AV_CODEC_CAP_SLICE_THREADS
+         AV_CODEC_CAP_PARAM_CHANGE
+@@ -98,6 +94,9 @@ cdef extern from "libavcodec/avcodec.h" nogil:
+         AV_CODEC_CAP_HYBRID
+         AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE
+ 
++    cdef enum:
++        AV_PROFILE_UNKNOWN = -99
++
+     cdef enum:
+         FF_THREAD_FRAME
+         FF_THREAD_SLICE
+@@ -156,9 +155,6 @@ cdef extern from "libavcodec/avcodec.h" nogil:
+         FF_COMPLIANCE_UNOFFICIAL
+         FF_COMPLIANCE_EXPERIMENTAL
+ 
+-    cdef enum:
+-        FF_PROFILE_UNKNOWN = -99
+-
+     cdef enum AVCodecID:
+         AV_CODEC_ID_NONE
+         AV_CODEC_ID_MPEG2VIDEO
+diff --git a/include/libavfilter/avfilter.pxd b/include/libavfilter/avfilter.pxd
+index de7bfb445..b1ced248b 100644
+--- a/include/libavfilter/avfilter.pxd
++++ b/include/libavfilter/avfilter.pxd
+@@ -13,16 +13,12 @@ cdef extern from "libavfilter/avfilter.h" nogil:
+     cdef unsigned avfilter_filter_pad_count(const AVFilter *filter, int is_output)
+ 
+     cdef struct AVFilter:
+-        AVClass *priv_class
+-
+         const char *name
+         const char *description
+-
+-        const int flags
+-
+         const AVFilterPad *inputs
+         const AVFilterPad *outputs
+-        int (*process_command)(AVFilterContext *, const char *cmd, const char *arg, char *res, int res_len, int flags)
++        const AVClass *priv_class
++        int flags
+ 
+     cdef AVFilter* avfilter_get_by_name(const char *name)
+     cdef const AVFilter* av_filter_iterate(void **opaque)
+diff --git a/include/libavformat/avformat.pxd b/include/libavformat/avformat.pxd
+index 6c23e99b4..09eede855 100644
+--- a/include/libavformat/avformat.pxd
++++ b/include/libavformat/avformat.pxd
+@@ -125,7 +125,6 @@ cdef extern from "libavformat/avformat.h" nogil:
+         AVFMT_NOBINSEARCH
+         AVFMT_NOGENSEARCH
+         AVFMT_NO_BYTE_SEEK
+-        AVFMT_ALLOW_FLUSH
+         AVFMT_TS_NONSTRICT
+         AVFMT_TS_NEGATIVE
+         AVFMT_SEEK_TO_PTS
+@@ -145,7 +144,6 @@ cdef extern from "libavformat/avformat.h" nogil:
+         AVFMT_FLAG_BITEXACT
+         AVFMT_FLAG_SORT_DTS
+         AVFMT_FLAG_FAST_SEEK
+-        AVFMT_FLAG_SHORTEST
+         AVFMT_FLAG_AUTO_BSF
+ 
+     cdef int av_probe_input_buffer(
+diff --git a/scripts/activate.sh b/scripts/activate.sh
+index ab22d79d9..81240cafd 100755
+--- a/scripts/activate.sh
++++ b/scripts/activate.sh
+@@ -21,7 +21,7 @@ if [[ ! "$PYAV_LIBRARY" ]]; then
+             return 1
+         fi
+     else
+-        PYAV_LIBRARY=ffmpeg-7.1.1
++        PYAV_LIBRARY=ffmpeg-8.0
+         echo "No \$PYAV_LIBRARY set; defaulting to $PYAV_LIBRARY"
+     fi
+ fi
+diff --git a/scripts/ffmpeg-7.0.json b/scripts/ffmpeg-8.0.json
+similarity index 61%
+rename from scripts/ffmpeg-7.0.json
+rename to scripts/ffmpeg-8.0.json
+index 6cbe76b2c..915f5bfc2 100644
+--- a/scripts/ffmpeg-7.0.json
++++ b/scripts/ffmpeg-8.0.json
+@@ -1,3 +1,3 @@
+ {
+-    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/7.0.2-1/ffmpeg-{platform}.tar.gz"
+-}
+\ No newline at end of file
++    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/8.0-1/ffmpeg-{platform}.tar.gz"
++}

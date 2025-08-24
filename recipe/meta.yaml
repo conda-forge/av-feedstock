@@ -10,6 +10,7 @@ source:
   patches:
     - patches/lgpl_tests.patch
     - patches/remove_checks_in_setup.patch
+    - patches/1988-build-with-ffmpeg8.patch
 
 build:
   number: 1
