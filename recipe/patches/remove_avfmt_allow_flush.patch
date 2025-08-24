@@ -1,0 +1,13 @@
+diff --git a/include/libavformat/avformat.pxd b/include/libavformat/avformat.pxd
+index 6c23e99..f30a991 100644
+--- a/include/libavformat/avformat.pxd
++++ b/include/libavformat/avformat.pxd
+@@ -125,7 +125,6 @@ cdef extern from "libavformat/avformat.h" nogil:
+         AVFMT_NOBINSEARCH
+         AVFMT_NOGENSEARCH
+         AVFMT_NO_BYTE_SEEK
+-        AVFMT_ALLOW_FLUSH
+         AVFMT_TS_NONSTRICT
+         AVFMT_TS_NEGATIVE
+         AVFMT_SEEK_TO_PTS
+

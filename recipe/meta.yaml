@@ -10,6 +10,7 @@ source:
   patches:
     - patches/lgpl_tests.patch
     - patches/remove_checks_in_setup.patch
+    - patches/remove_avfmt_allow_flush.patch  # [ffmpeg=="8"]
 
 build:
   number: 1
