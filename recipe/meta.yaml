@@ -10,6 +10,9 @@ source:
   patches:
     - patches/lgpl_tests.patch
     - patches/remove_checks_in_setup.patch
+
+    # Backported to get up to ffmpeg8 compatibility
+    # https://github.com/PyAV-Org/PyAV/pull/1988
     - patches/1988-build-with-ffmpeg8.patch
 
 build:

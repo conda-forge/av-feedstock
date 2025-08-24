@@ -1,52 +1,22 @@
-From 5e7acef8433ae4b360ad02903ccf164f8e363152 Mon Sep 17 00:00:00 2001
+From 82ae7902a0ff231dc74cc1d2fe76b09637a7200b Mon Sep 17 00:00:00 2001
 From: WyattBlue <wyattblue@auto-editor.com>
 Date: Sat, 23 Aug 2025 12:23:26 -0400
 Subject: [PATCH] Build with ffmpeg 8
 
 ---
- .github/workflows/smoke.yml                  |  8 ++++----
- av/codec/codec.pyx                           |  1 -
- av/codec/context.pyx                         |  6 +++---
- av/container/core.pyx                        |  1 -
- av/filter/filter.pyi                         |  1 -
- av/filter/filter.pyx                         |  4 ----
- av/format.pyx                                |  1 -
- include/libavcodec/avcodec.pxd               | 10 +++-------
- include/libavfilter/avfilter.pxd             |  8 ++------
- include/libavformat/avformat.pxd             |  2 --
- scripts/activate.sh                          |  2 +-
- scripts/{ffmpeg-7.0.json => ffmpeg-8.0.json} |  4 ++--
- 12 files changed, 15 insertions(+), 33 deletions(-)
- rename scripts/{ffmpeg-7.0.json => ffmpeg-8.0.json} (61%)
+ av/codec/codec.pyx               |  1 -
+ av/codec/context.pyx             |  6 +++---
+ av/container/core.pyx            |  1 -
+ av/filter/filter.pyi             |  7 -------
+ av/filter/filter.pyx             | 20 --------------------
+ av/format.pyx                    |  1 -
+ include/libavcodec/avcodec.pxd   | 10 +++-------
+ include/libavfilter/avfilter.pxd |  9 ++-------
+ include/libavformat/avformat.pxd |  2 --
+ 9 files changed, 8 insertions(+), 49 deletions(-)
 
-diff --git a/.github/workflows/smoke.yml b/.github/workflows/smoke.yml
-index d6637ce62..3c355a949 100644
---- a/.github/workflows/smoke.yml
-+++ b/.github/workflows/smoke.yml
-@@ -34,9 +34,9 @@ jobs:
-       fail-fast: false
-       matrix:
-         config:
--          - {os: ubuntu-24.04, python: "3.12", ffmpeg: "7.1.1", extras: true}
--          - {os: ubuntu-24.04, python: "pypy3.10", ffmpeg: "7.1.1"}
--          - {os: macos-14, python: "3.9", ffmpeg: "7.1.1"}
-+          - {os: ubuntu-24.04, python: "3.12", ffmpeg: "8.0", extras: true}
-+          - {os: ubuntu-24.04, python: "pypy3.10", ffmpeg: "8.0"}
-+          - {os: macos-14, python: "3.9", ffmpeg: "8.0"}
- 
-     env:
-       PYAV_PYTHON: python${{ matrix.config.python }}
-@@ -109,7 +109,7 @@ jobs:
-       fail-fast: false
-       matrix:
-         config:
--          - {os: windows-latest, python: "3.9", ffmpeg: "7.1"}
-+          - {os: windows-latest, python: "3.9", ffmpeg: "8.0"}
- 
-     steps:
-     - name: Checkout
 diff --git a/av/codec/codec.pyx b/av/codec/codec.pyx
-index a28db758e..aeab61cc3 100644
+index a28db75..aeab61c 100644
 --- a/av/codec/codec.pyx
 +++ b/av/codec/codec.pyx
 @@ -36,7 +36,6 @@ class Capabilities(IntEnum):
@@ -58,7 +28,7 @@ index a28db758e..aeab61cc3 100644
      channel_conf = lib.AV_CODEC_CAP_CHANNEL_CONF
      neg_linesizes = 1 << 11
 diff --git a/av/codec/context.pyx b/av/codec/context.pyx
-index 49087e779..1d9c412b2 100644
+index 5ca8f24..a15f827 100644
 --- a/av/codec/context.pyx
 +++ b/av/codec/context.pyx
 @@ -494,7 +494,7 @@ cdef class CodecContext:
@@ -89,7 +59,7 @@ index 49087e779..1d9c412b2 100644
                  self.ptr.profile = desc.profiles[i].profile
                  return
 diff --git a/av/container/core.pyx b/av/container/core.pyx
-index 2b9a1244b..d8950c76f 100755
+index 2b9a124..d8950c7 100755
 --- a/av/container/core.pyx
 +++ b/av/container/core.pyx
 @@ -138,7 +138,6 @@ class Flags(Flag):
@@ -101,25 +71,47 @@ index 2b9a1244b..d8950c76f 100755
  
  class AudioCodec(IntEnum):
 diff --git a/av/filter/filter.pyi b/av/filter/filter.pyi
-index e9f9737f3..f07f317fc 100644
+index 2751e97..082e334 100644
 --- a/av/filter/filter.pyi
 +++ b/av/filter/filter.pyi
-@@ -7,7 +7,6 @@ class Filter:
+@@ -10,13 +10,6 @@ class Filter:
      descriptor: Descriptor
      options: tuple[Option, ...] | None
      flags: int
+-    dynamic_inputs: bool
+-    dynamic_outputs: bool
+-    timeline_support: bool
+-    slice_threads: bool
 -    command_support: bool
+-    inputs: tuple[FilterPad, ...]
+-    outputs: tuple[FilterPad, ...]
  
      def __init__(self, name: str) -> None: ...
  
 diff --git a/av/filter/filter.pyx b/av/filter/filter.pyx
-index d66b2e46a..b6e7005f0 100644
+index d4880dc..014da32 100644
 --- a/av/filter/filter.pyx
 +++ b/av/filter/filter.pyx
-@@ -47,10 +47,6 @@ cdef class Filter:
+@@ -55,26 +55,6 @@ cdef class Filter:
      def flags(self):
          return self.ptr.flags
  
+-    @property
+-    def dynamic_inputs(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_DYNAMIC_INPUTS)
+-
+-    @property
+-    def dynamic_outputs(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_DYNAMIC_OUTPUTS)
+-
+-    @property
+-    def timeline_support(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC)
+-
+-    @property
+-    def slice_threads(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_SLICE_THREADS)
+-
 -    @property
 -    def command_support(self):
 -        return self.ptr.process_command != NULL
@@ -128,7 +120,7 @@ index d66b2e46a..b6e7005f0 100644
      def inputs(self):
          if self._inputs is None:
 diff --git a/av/format.pyx b/av/format.pyx
-index 464e34f49..2eb386649 100644
+index 464e34f..2eb3866 100644
 --- a/av/format.pyx
 +++ b/av/format.pyx
 @@ -31,7 +31,6 @@ class Flags(Flag):
@@ -140,7 +132,7 @@ index 464e34f49..2eb386649 100644
      ts_negative: "Format allows muxing negative timestamps." = lib.AVFMT_TS_NEGATIVE
      # If not set the timestamp will be shifted in `av_write_frame()` and `av_interleaved_write_frame()`
 diff --git a/include/libavcodec/avcodec.pxd b/include/libavcodec/avcodec.pxd
-index 134ae6f07..2bce8c2c1 100644
+index 0c8713c..2959ca8 100644
 --- a/include/libavcodec/avcodec.pxd
 +++ b/include/libavcodec/avcodec.pxd
 @@ -80,14 +80,10 @@ cdef extern from "libavcodec/avcodec.h" nogil:
@@ -179,13 +171,14 @@ index 134ae6f07..2bce8c2c1 100644
          AV_CODEC_ID_NONE
          AV_CODEC_ID_MPEG2VIDEO
 diff --git a/include/libavfilter/avfilter.pxd b/include/libavfilter/avfilter.pxd
-index de7bfb445..b1ced248b 100644
+index dd3e91d..ed31c27 100644
 --- a/include/libavfilter/avfilter.pxd
 +++ b/include/libavfilter/avfilter.pxd
-@@ -13,16 +13,12 @@ cdef extern from "libavfilter/avfilter.h" nogil:
-     cdef unsigned avfilter_filter_pad_count(const AVFilter *filter, int is_output)
+@@ -23,17 +23,12 @@ cdef extern from "libavfilter/avfilter.h" nogil:
+     int pyav_get_num_pads "_avfilter_get_num_pads" (const AVFilter *filter, int is_output, const AVFilterPad *pads)
  
      cdef struct AVFilter:
+-
 -        AVClass *priv_class
 -
          const char *name
@@ -199,10 +192,10 @@ index de7bfb445..b1ced248b 100644
 +        const AVClass *priv_class
 +        int flags
  
-     cdef AVFilter* avfilter_get_by_name(const char *name)
-     cdef const AVFilter* av_filter_iterate(void **opaque)
+     cdef enum:
+         AVFILTER_FLAG_DYNAMIC_INPUTS
 diff --git a/include/libavformat/avformat.pxd b/include/libavformat/avformat.pxd
-index 6c23e99b4..09eede855 100644
+index 6c23e99..09eede8 100644
 --- a/include/libavformat/avformat.pxd
 +++ b/include/libavformat/avformat.pxd
 @@ -125,7 +125,6 @@ cdef extern from "libavformat/avformat.h" nogil:
@@ -221,30 +214,7 @@ index 6c23e99b4..09eede855 100644
          AVFMT_FLAG_AUTO_BSF
  
      cdef int av_probe_input_buffer(
-diff --git a/scripts/activate.sh b/scripts/activate.sh
-index ab22d79d9..81240cafd 100755
---- a/scripts/activate.sh
-+++ b/scripts/activate.sh
-@@ -21,7 +21,7 @@ if [[ ! "$PYAV_LIBRARY" ]]; then
-             return 1
-         fi
-     else
--        PYAV_LIBRARY=ffmpeg-7.1.1
-+        PYAV_LIBRARY=ffmpeg-8.0
-         echo "No \$PYAV_LIBRARY set; defaulting to $PYAV_LIBRARY"
-     fi
- fi
-diff --git a/scripts/ffmpeg-7.0.json b/scripts/ffmpeg-8.0.json
-similarity index 61%
-rename from scripts/ffmpeg-7.0.json
-rename to scripts/ffmpeg-8.0.json
-index 6cbe76b2c..915f5bfc2 100644
---- a/scripts/ffmpeg-7.0.json
-+++ b/scripts/ffmpeg-8.0.json
-@@ -1,3 +1,3 @@
- {
--    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/7.0.2-1/ffmpeg-{platform}.tar.gz"
--}
-\ No newline at end of file
-+    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/8.0-1/ffmpeg-{platform}.tar.gz"
-+}
+-- 
+2.49.0
+
+
