@@ -1,0 +1,145 @@
+From cf6d0520c3a806b6ab9ca5caf3398ac47c809aae Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Mon, 7 Jul 2025 11:53:20 -0400
+Subject: [PATCH 04/13] Use AVPacket.time_base
+
+---
+ av/codec/context.pyx           |  4 ++--
+ av/container/input.pyx         |  4 ++--
+ av/packet.pxd                  |  6 ------
+ av/packet.py                   | 15 +++++++--------
+ include/libavcodec/avcodec.pxd |  6 +-----
+ 5 files changed, 12 insertions(+), 23 deletions(-)
+
+diff --git a/av/codec/context.pyx b/av/codec/context.pyx
+index 5ca8f24..49087e7 100644
+--- a/av/codec/context.pyx
++++ b/av/codec/context.pyx
+@@ -428,7 +428,7 @@ cdef class CodecContext:
+         #
+         # NOTE: if the CodecContext's time_base is altered during encoding, all bets
+         # are off!
+-        packet._time_base = self.ptr.time_base
++        packet.ptr.time_base = self.ptr.time_base
+ 
+     cpdef decode(self, Packet packet=None):
+         """Decode a list of :class:`.Frame` from the given :class:`.Packet`.
+@@ -469,7 +469,7 @@ cdef class CodecContext:
+         # TODO: Somehow get this from the stream so we can not pass the
+         # packet here (because flushing packets are bogus).
+         if packet is not None:
+-            frame._time_base = packet._time_base
++            frame._time_base = packet.ptr.time_base
+ 
+     @property
+     def name(self):
+diff --git a/av/container/input.pyx b/av/container/input.pyx
+index 1ba4750..943081e 100644
+--- a/av/container/input.pyx
++++ b/av/container/input.pyx
+@@ -183,7 +183,7 @@ cdef class InputContainer(Container):
+                     if packet.ptr.stream_index < len(self.streams):
+                         packet._stream = self.streams[packet.ptr.stream_index]
+                         # Keep track of this so that remuxing is easier.
+-                        packet._time_base = packet._stream.ptr.time_base
++                        packet.ptr.time_base = packet._stream.ptr.time_base
+                         yield packet
+ 
+             # Flush!
+@@ -191,7 +191,7 @@ cdef class InputContainer(Container):
+                 if include_stream[i]:
+                     packet = Packet()
+                     packet._stream = self.streams[i]
+-                    packet._time_base = packet._stream.ptr.time_base
++                    packet.ptr.time_base = packet._stream.ptr.time_base
+                     yield packet
+ 
+         finally:
+diff --git a/av/packet.pxd b/av/packet.pxd
+index ca21e6b..f1517a3 100644
+--- a/av/packet.pxd
++++ b/av/packet.pxd
+@@ -6,15 +6,9 @@ from av.stream cimport Stream
+ 
+ 
+ cdef class Packet(Buffer):
+-
+     cdef lib.AVPacket* ptr
+-
+     cdef Stream _stream
+-
+-    # We track our own time.
+-    cdef lib.AVRational _time_base
+     cdef _rebase_time(self, lib.AVRational)
+-
+     # Hold onto the original reference.
+     cdef ByteSource source
+     cdef size_t _buffer_size(self)
+diff --git a/av/packet.py b/av/packet.py
+index c49085c..81f1aaa 100644
+--- a/av/packet.py
++++ b/av/packet.py
+@@ -65,16 +65,15 @@ class Packet(Buffer):
+         if not dst.num:
+             raise ValueError("Cannot rebase to zero time.")
+ 
+-        if not self._time_base.num:
+-            self._time_base = dst
++        if not self.ptr.time_base.num:
++            self.ptr.time_base = dst
+             return
+ 
+-        if self._time_base.num == dst.num and self._time_base.den == dst.den:
++        if self.ptr.time_base.num == dst.num and self.ptr.time_base.den == dst.den:
+             return
+ 
+-        lib.av_packet_rescale_ts(self.ptr, self._time_base, dst)
+-
+-        self._time_base = dst
++        lib.av_packet_rescale_ts(self.ptr, self.ptr.time_base, dst)
++        self.ptr.time_base = dst
+ 
+     def decode(self):
+         """
+@@ -106,11 +105,11 @@ class Packet(Buffer):
+ 
+         :type: fractions.Fraction
+         """
+-        return avrational_to_fraction(cython.address(self._time_base))
++        return avrational_to_fraction(cython.address(self.ptr.time_base))
+ 
+     @time_base.setter
+     def time_base(self, value):
+-        to_avrational(value, cython.address(self._time_base))
++        to_avrational(value, cython.address(self.ptr.time_base))
+ 
+     @property
+     def pts(self):
+diff --git a/include/libavcodec/avcodec.pxd b/include/libavcodec/avcodec.pxd
+index 0c8713c..134ae6f 100644
+--- a/include/libavcodec/avcodec.pxd
++++ b/include/libavcodec/avcodec.pxd
+@@ -466,19 +466,15 @@ cdef extern from "libavcodec/avcodec.h" nogil:
+     cdef AVFrame* avcodec_alloc_frame()
+ 
+     cdef struct AVPacket:
+-
+         int64_t pts
+         int64_t dts
+         uint8_t *data
+-
++        AVRational time_base
+         int size
+         int stream_index
+         int flags
+-
+         int duration
+-
+         int64_t pos
+-
+         void *opaque
+         AVBufferRef *opaque_ref
+ 
+-- 
+2.49.0
+

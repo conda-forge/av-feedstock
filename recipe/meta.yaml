@@ -13,7 +13,19 @@ source:
 
     # Backported to get up to ffmpeg8 compatibility
     # https://github.com/PyAV-Org/PyAV/pull/1988
-    - patches/1988-build-with-ffmpeg8.patch
+    - patches/0001-Remove-checks-in-setup.py.patch
+    - patches/0002-Avoid-setting-channel-variable.patch
+    - patches/0003-Remove-attachment-docs.patch
+    - patches/0004-Use-AVPacket.time_base.patch
+    - patches/0005-Install-cython-from-scientific-python-nightlies-in-s.patch
+    - patches/0006-Add-set_image-for-updating-the-image-content-of-an-e.patch
+    - patches/0007-Index-opaque-by-id-and-make-key_frame-writable.patch
+    - patches/0008-Fix-opaque-container-on-PyPy.patch
+    - patches/0009-Replace-FFmpeg-version-macro-with-direct-API-call.patch
+    - patches/0010-Combine-pad-and-link.patch
+    - patches/0011-Remove-FilterFlags.patch
+    - patches/0012-Remove-unused-swr-functions.patch
+    - patches/0013-Build-with-ffmpeg-8.patch
 
 build:
   number: 1

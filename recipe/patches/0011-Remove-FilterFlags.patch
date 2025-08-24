@@ -1,0 +1,118 @@
+From eaa675d67ee8802ea651c49cadf3da5313ded417 Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Mon, 4 Aug 2025 17:56:51 -0400
+Subject: [PATCH 11/13] Remove FilterFlags
+
+---
+ av/filter/__init__.py            |  2 +-
+ av/filter/filter.pyi             |  4 ----
+ av/filter/filter.pyx             | 24 ------------------------
+ include/libavfilter/avfilter.pxd |  7 -------
+ tests/test_filters.py            |  7 -------
+ 5 files changed, 1 insertion(+), 43 deletions(-)
+
+diff --git a/av/filter/__init__.py b/av/filter/__init__.py
+index 5dd4430..b63a95f 100644
+--- a/av/filter/__init__.py
++++ b/av/filter/__init__.py
+@@ -1,3 +1,3 @@
+-from .filter import Filter, FilterFlags, filter_descriptor, filters_available
++from .filter import Filter, filter_descriptor, filters_available
+ from .graph import Graph
+ from .loudnorm import stats
+diff --git a/av/filter/filter.pyi b/av/filter/filter.pyi
+index 42d9cd7..e9f9737 100644
+--- a/av/filter/filter.pyi
++++ b/av/filter/filter.pyi
+@@ -7,10 +7,6 @@ class Filter:
+     descriptor: Descriptor
+     options: tuple[Option, ...] | None
+     flags: int
+-    dynamic_inputs: bool
+-    dynamic_outputs: bool
+-    timeline_support: bool
+-    slice_threads: bool
+     command_support: bool
+ 
+     def __init__(self, name: str) -> None: ...
+diff --git a/av/filter/filter.pyx b/av/filter/filter.pyx
+index 5f4963b..d66b2e4 100644
+--- a/av/filter/filter.pyx
++++ b/av/filter/filter.pyx
+@@ -13,14 +13,6 @@ cdef Filter wrap_filter(const lib.AVFilter *ptr):
+     return filter_
+ 
+ 
+-cpdef enum FilterFlags:
+-    DYNAMIC_INPUTS = lib.AVFILTER_FLAG_DYNAMIC_INPUTS
+-    DYNAMIC_OUTPUTS = lib.AVFILTER_FLAG_DYNAMIC_OUTPUTS
+-    SLICE_THREADS = lib.AVFILTER_FLAG_SLICE_THREADS
+-    SUPPORT_TIMELINE_GENERIC = lib.AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC
+-    SUPPORT_TIMELINE_INTERNAL = lib.AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
+-
+-
+ cdef class Filter:
+     def __cinit__(self, name):
+         if name is _cinit_sentinel:
+@@ -55,22 +47,6 @@ cdef class Filter:
+     def flags(self):
+         return self.ptr.flags
+ 
+-    @property
+-    def dynamic_inputs(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_DYNAMIC_INPUTS)
+-
+-    @property
+-    def dynamic_outputs(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_DYNAMIC_OUTPUTS)
+-
+-    @property
+-    def timeline_support(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC)
+-
+-    @property
+-    def slice_threads(self):
+-        return bool(self.ptr.flags & lib.AVFILTER_FLAG_SLICE_THREADS)
+-
+     @property
+     def command_support(self):
+         return self.ptr.process_command != NULL
+diff --git a/include/libavfilter/avfilter.pxd b/include/libavfilter/avfilter.pxd
+index 90f3490..de7bfb4 100644
+--- a/include/libavfilter/avfilter.pxd
++++ b/include/libavfilter/avfilter.pxd
+@@ -24,13 +24,6 @@ cdef extern from "libavfilter/avfilter.h" nogil:
+         const AVFilterPad *outputs
+         int (*process_command)(AVFilterContext *, const char *cmd, const char *arg, char *res, int res_len, int flags)
+ 
+-    cdef enum:
+-        AVFILTER_FLAG_DYNAMIC_INPUTS
+-        AVFILTER_FLAG_DYNAMIC_OUTPUTS
+-        AVFILTER_FLAG_SLICE_THREADS
+-        AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC
+-        AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL
+-
+     cdef AVFilter* avfilter_get_by_name(const char *name)
+     cdef const AVFilter* av_filter_iterate(void **opaque)
+ 
+diff --git a/tests/test_filters.py b/tests/test_filters.py
+index 886c22a..bd74a63 100644
+--- a/tests/test_filters.py
++++ b/tests/test_filters.py
+@@ -50,13 +50,6 @@ class TestFilters(TestCase):
+         f = Filter("testsrc")
+         assert f.name == "testsrc"
+         assert f.description == "Generate test pattern."
+-        assert not f.dynamic_inputs
+-        assert not f.dynamic_outputs
+-
+-    def test_dynamic_filter_descriptor(self):
+-        f = Filter("split")
+-        assert not f.dynamic_inputs
+-        assert f.dynamic_outputs
+ 
+     def test_generator_graph(self):
+         graph = Graph()
+-- 
+2.49.0
+

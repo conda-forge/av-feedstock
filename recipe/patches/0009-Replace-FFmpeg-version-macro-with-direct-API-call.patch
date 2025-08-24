@@ -1,0 +1,75 @@
+From 2f6c495778c083f7cb9f712beef025734cff9fb6 Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Mon, 4 Aug 2025 16:28:03 -0400
+Subject: [PATCH 09/13] Replace FFmpeg version macro with direct API call
+
+---
+ av/filter/pad.pyx                |  4 +---
+ include/libavfilter/avfilter.pxd | 15 +--------------
+ 2 files changed, 2 insertions(+), 17 deletions(-)
+
+diff --git a/av/filter/pad.pyx b/av/filter/pad.pyx
+index 873b31b..cf889ea 100644
+--- a/av/filter/pad.pyx
++++ b/av/filter/pad.pyx
+@@ -72,9 +72,7 @@ cdef tuple alloc_filter_pads(Filter filter, const lib.AVFilterPad *ptr, bint is_
+     cdef int i = 0
+     cdef int count
+     if context is None:
+-        # This is a custom function defined using a macro in avfilter.pxd. Its usage
+-        # can be changed after we stop supporting FFmpeg < 5.0.
+-        count = lib.pyav_get_num_pads(filter.ptr, not is_input, ptr)
++        count = lib.avfilter_filter_pad_count(filter.ptr, not is_input)
+     else:
+         count = (context.ptr.nb_inputs if is_input else context.ptr.nb_outputs)
+ 
+diff --git a/include/libavfilter/avfilter.pxd b/include/libavfilter/avfilter.pxd
+index dd3e91d..90f3490 100644
+--- a/include/libavfilter/avfilter.pxd
++++ b/include/libavfilter/avfilter.pxd
+@@ -1,14 +1,4 @@
+-
+ cdef extern from "libavfilter/avfilter.h" nogil:
+-    """
+-    #if (LIBAVFILTER_VERSION_INT >= 525156)
+-        // avfilter_filter_pad_count is available since version 8.3.100 of libavfilter (FFmpeg 5.0)
+-        #define _avfilter_get_num_pads(filter, is_output, pads) (avfilter_filter_pad_count(filter, is_output))
+-    #else
+-        // avfilter_filter_pad_count has been deprecated as of version 8.3.100 of libavfilter (FFmpeg 5.0)
+-        #define _avfilter_get_num_pads(filter, is_output, pads) (avfilter_pad_count(pads))
+-    #endif
+-    """
+     cdef int   avfilter_version()
+     cdef char* avfilter_configuration()
+     cdef char* avfilter_license()
+@@ -20,10 +10,9 @@ cdef extern from "libavfilter/avfilter.h" nogil:
+     const char* avfilter_pad_get_name(const AVFilterPad *pads, int index)
+     AVMediaType avfilter_pad_get_type(const AVFilterPad *pads, int index)
+ 
+-    int pyav_get_num_pads "_avfilter_get_num_pads" (const AVFilter *filter, int is_output, const AVFilterPad *pads)
++    cdef unsigned avfilter_filter_pad_count(const AVFilter *filter, int is_output)
+ 
+     cdef struct AVFilter:
+-
+         AVClass *priv_class
+ 
+         const char *name
+@@ -48,7 +37,6 @@ cdef extern from "libavfilter/avfilter.h" nogil:
+     cdef struct AVFilterLink  # Defined later.
+ 
+     cdef struct AVFilterContext:
+-
+         AVClass *av_class
+         AVFilter *filter
+ 
+@@ -68,7 +56,6 @@ cdef extern from "libavfilter/avfilter.h" nogil:
+     cdef AVClass* avfilter_get_class()
+ 
+     cdef struct AVFilterLink:
+-
+         AVFilterContext *src
+         AVFilterPad *srcpad
+         AVFilterContext *dst
+-- 
+2.49.0
+

@@ -1,0 +1,361 @@
+From e2ec340cab48201fc3a72aa029fdae4035f3c4ed Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Mon, 21 Jul 2025 21:24:05 -0400
+Subject: [PATCH 07/13] Index opaque by id and make `key_frame` writable
+
+---
+ CHANGELOG.rst              |  7 ++++
+ av/{frame.pyx => frame.py} | 85 +++++++++++++++++++++-----------------
+ av/frame.pyi               |  4 +-
+ av/opaque.pxd              |  6 +--
+ av/opaque.pyx              | 44 +++++++++++++-------
+ tests/test_videoframe.py   | 15 +++++++
+ 6 files changed, 102 insertions(+), 59 deletions(-)
+ rename av/{frame.pyx => frame.py} (67%)
+
+diff --git a/CHANGELOG.rst b/CHANGELOG.rst
+index 9beb09f..395910d 100644
+--- a/CHANGELOG.rst
++++ b/CHANGELOG.rst
+@@ -16,6 +16,13 @@ We are operating with `semantic versioning <https://semver.org>`_.
+     Note that they these tags will not actually close the issue/PR until they
+     are merged into the "default" branch.
+ 
++v15.1.0
++-------
++
++Features:
++
++- Make the `Frame.key_frame` flag writable.
++
+ v15.0.0
+ -------
+ 
+diff --git a/av/frame.pyx b/av/frame.py
+similarity index 67%
+rename from av/frame.pyx
+rename to av/frame.py
+index fefdd2d..8100c39 100644
+--- a/av/frame.pyx
++++ b/av/frame.py
+@@ -1,11 +1,13 @@
+-from av.error cimport err_check
+-from av.opaque cimport opaque_container
+-from av.utils cimport avrational_to_fraction, to_avrational
++import cython
++from cython.cimports.av.error import err_check
++from cython.cimports.av.opaque import opaque_container
++from cython.cimports.av.utils import avrational_to_fraction, to_avrational
+ 
+ from av.sidedata.sidedata import SideDataContainer
+ 
+ 
+-cdef class Frame:
++@cython.cclass
++class Frame:
+     """
+     Base class for audio and video frames.
+ 
+@@ -13,20 +15,19 @@ cdef class Frame:
+     """
+ 
+     def __cinit__(self, *args, **kwargs):
+-        with nogil:
++        with cython.nogil:
+             self.ptr = lib.av_frame_alloc()
+ 
+     def __dealloc__(self):
+-        with nogil:
+-            # This calls av_frame_unref, and then frees the pointer.
+-            # Thats it.
+-            lib.av_frame_free(&self.ptr)
++        with cython.nogil:
++            lib.av_frame_free(cython.address(self.ptr))
+ 
+     def __repr__(self):
+-        return f"av.{self.__class__.__name__} pts={self.pts} at 0x{id(self):x}>"
++        return f"<av.{self.__class__.__name__} pts={self.pts} at 0x{id(self):x}>"
+ 
+-    cdef _copy_internal_attributes(self, Frame source, bint data_layout=True):
+-        """Mimic another frame."""
++    @cython.cfunc
++    def _copy_internal_attributes(self, source: Frame, data_layout: cython.bint = True):
++        # Mimic another frame
+         self._time_base = source._time_base
+         lib.av_frame_copy_props(self.ptr, source.ptr)
+         if data_layout:
+@@ -36,10 +37,12 @@ cdef class Frame:
+             self.ptr.height = source.ptr.height
+             self.ptr.ch_layout = source.ptr.ch_layout
+ 
+-    cdef _init_user_attributes(self):
++    @cython.cfunc
++    def _init_user_attributes(self):
+         pass  # Dummy to match the API of the others.
+ 
+-    cdef _rebase_time(self, lib.AVRational dst):
++    @cython.cfunc
++    def _rebase_time(self, dst: lib.AVRational):
+         if not dst.num:
+             raise ValueError("Cannot rebase to zero time.")
+ 
+@@ -54,7 +57,9 @@ cdef class Frame:
+             self.ptr.pts = lib.av_rescale_q(self.ptr.pts, self._time_base, dst)
+ 
+         if self.ptr.duration != 0:
+-            self.ptr.duration = lib.av_rescale_q(self.ptr.duration, self._time_base, dst)
++            self.ptr.duration = lib.av_rescale_q(
++                self.ptr.duration, self._time_base, dst
++            )
+ 
+         self._time_base = dst
+ 
+@@ -65,7 +70,7 @@ cdef class Frame:
+ 
+         (if frame threading isn't used) This is also the Presentation time of this frame calculated from only :attr:`.Packet.dts` values without pts values.
+ 
+-        :type: int
++        :type: int | None
+         """
+         if self.ptr.pkt_dts == lib.AV_NOPTS_VALUE:
+             return None
+@@ -85,7 +90,7 @@ cdef class Frame:
+ 
+         This is the time at which the frame should be shown to the user.
+ 
+-        :type: int
++        :type: int | None
+         """
+         if self.ptr.pts == lib.AV_NOPTS_VALUE:
+             return None
+@@ -105,16 +110,11 @@ cdef class Frame:
+ 
+         :type: int
+         """
+-        if self.ptr.duration == 0:
+-            return None
+         return self.ptr.duration
+ 
+     @duration.setter
+     def duration(self, value):
+-        if value is None:
+-            self.ptr.duration = 0
+-        else:
+-            self.ptr.duration = value
++        self.ptr.duration = value
+ 
+     @property
+     def time(self):
+@@ -123,26 +123,25 @@ cdef class Frame:
+ 
+         This is the time at which the frame should be shown to the user.
+ 
+-        :type: float
++        :type: float | None
+         """
+         if self.ptr.pts == lib.AV_NOPTS_VALUE:
+             return None
+-        else:
+-            return float(self.ptr.pts) * self._time_base.num / self._time_base.den
++        return float(self.ptr.pts) * self._time_base.num / self._time_base.den
+ 
+     @property
+     def time_base(self):
+         """
+         The unit of time (in fractional seconds) in which timestamps are expressed.
+ 
+-        :type: fractions.Fraction
++        :type: fractions.Fraction | None
+         """
+         if self._time_base.num:
+-            return avrational_to_fraction(&self._time_base)
++            return avrational_to_fraction(cython.address(self._time_base))
+ 
+     @time_base.setter
+     def time_base(self, value):
+-        to_avrational(value, &self._time_base)
++        to_avrational(value, cython.address(self._time_base))
+ 
+     @property
+     def is_corrupt(self):
+@@ -151,7 +150,9 @@ cdef class Frame:
+ 
+         :type: bool
+         """
+-        return self.ptr.decode_error_flags != 0 or bool(self.ptr.flags & lib.AV_FRAME_FLAG_CORRUPT)
++        return self.ptr.decode_error_flags != 0 or bool(
++            self.ptr.flags & lib.AV_FRAME_FLAG_CORRUPT
++        )
+ 
+     @property
+     def key_frame(self):
+@@ -162,6 +163,13 @@ cdef class Frame:
+         """
+         return bool(self.ptr.flags & lib.AV_FRAME_FLAG_KEY)
+ 
++    @key_frame.setter
++    def key_frame(self, v):
++        # PyAV makes no guarantees this does anything.
++        if v:
++            self.ptr.flags |= lib.AV_FRAME_FLAG_KEY
++        else:
++            self.ptr.flags &= ~lib.AV_FRAME_FLAG_KEY
+ 
+     @property
+     def side_data(self):
+@@ -174,20 +182,19 @@ cdef class Frame:
+         Ensures that the frame data is writable. Copy the data to new buffer if it is not.
+         This is a wrapper around :ffmpeg:`av_frame_make_writable`.
+         """
+-        cdef int ret
+-
+-        ret = lib.av_frame_make_writable(self.ptr)
++        ret: cython.int = lib.av_frame_make_writable(self.ptr)
+         err_check(ret)
+ 
+     @property
+     def opaque(self):
+-        if self.ptr.opaque_ref is not NULL:
+-            return opaque_container.get(<char *> self.ptr.opaque_ref.data)
++        if self.ptr.opaque_ref is not cython.NULL:
++            return opaque_container.get(
++                cython.cast(cython.p_char, self.ptr.opaque_ref.data)
++            )
+ 
+     @opaque.setter
+     def opaque(self, v):
+-        lib.av_buffer_unref(&self.ptr.opaque_ref)
++        lib.av_buffer_unref(cython.address(self.ptr.opaque_ref))
+ 
+-        if v is None:
+-            return
+-        self.ptr.opaque_ref = opaque_container.add(v)
++        if v is not None:
++            self.ptr.opaque_ref = opaque_container.add(v)
+diff --git a/av/frame.pyi b/av/frame.pyi
+index 38a273a..f085fc0 100644
+--- a/av/frame.pyi
++++ b/av/frame.pyi
+@@ -9,8 +9,8 @@ class SideData(TypedDict, total=False):
+ class Frame:
+     dts: int | None
+     pts: int | None
+-    duration: int | None
+-    time_base: Fraction
++    duration: int
++    time_base: Fraction | None
+     side_data: SideData
+     opaque: object
+     @property
+diff --git a/av/opaque.pxd b/av/opaque.pxd
+index f5c38d7..7617493 100644
+--- a/av/opaque.pxd
++++ b/av/opaque.pxd
+@@ -2,11 +2,11 @@ cimport libav as lib
+ 
+ 
+ cdef class OpaqueContainer:
+-    cdef dict _by_name
++    cdef dict _objects
+ 
+     cdef lib.AVBufferRef *add(self, object v)
+-    cdef object get(self, bytes name)
+-    cdef object pop(self, bytes name)
++    cdef object get(self, char *name)
++    cdef object pop(self, char *name)
+ 
+ 
+ cdef OpaqueContainer opaque_container
+diff --git a/av/opaque.pyx b/av/opaque.pyx
+index 1e67698..619169e 100644
+--- a/av/opaque.pyx
++++ b/av/opaque.pyx
+@@ -1,7 +1,6 @@
+ cimport libav as lib
+ from libc.stdint cimport uint8_t
+-
+-from uuid import uuid4
++from libc.string cimport memcpy
+ 
+ 
+ cdef void key_free(void *opaque, uint8_t *data) noexcept nogil:
+@@ -11,22 +10,37 @@ cdef void key_free(void *opaque, uint8_t *data) noexcept nogil:
+ 
+ 
+ cdef class OpaqueContainer:
+-    """A container that holds references to Python objects, indexed by uuid"""
+-
+     def __cinit__(self):
+-        self._by_name = {}
++        self._objects = {}
++
++    cdef lib.AVBufferRef *add(self, object v):
++        # Use object's memory address as key
++        cdef size_t key = id(v)
++        self._objects[key] = v
++
++        cdef uint8_t *data = <uint8_t *>lib.av_malloc(sizeof(size_t))
++        if data == NULL:
++            raise MemoryError("Failed to allocate memory for key")
++
++        memcpy(data, &key, sizeof(size_t))
++
++        # Create the buffer with our free callback
++        cdef lib.AVBufferRef *buffer_ref = lib.av_buffer_create(
++            data, sizeof(size_t), key_free, NULL, 0
++        )
++
++        if buffer_ref == NULL:
++            raise MemoryError("Failed to create AVBufferRef")
+ 
+-    cdef lib.AVBufferRef *add(self, v):
+-        cdef bytes uuid = str(uuid4()).encode("utf-8")
+-        cdef lib.AVBufferRef *ref = lib.av_buffer_create(uuid, len(uuid), &key_free, NULL, 0)
+-        self._by_name[uuid] = v
+-        return ref
++        return buffer_ref
+ 
+-    cdef object get(self, bytes name):
+-        return self._by_name.get(name)
++    cdef object get(self, char *name):
++        cdef size_t key = (<size_t *>name)[0]
++        return self._objects.get(key)
+ 
+-    cdef object pop(self, bytes name):
+-        return self._by_name.pop(name)
++    cdef object pop(self, char *name):
++        cdef size_t key = (<size_t *>name)[0]
++        return self._objects.pop(key, None)
+ 
+ 
+-cdef opaque_container = OpaqueContainer()
++cdef OpaqueContainer opaque_container = OpaqueContainer()
+diff --git a/tests/test_videoframe.py b/tests/test_videoframe.py
+index 9c9773a..90d91ab 100644
+--- a/tests/test_videoframe.py
++++ b/tests/test_videoframe.py
+@@ -122,6 +122,21 @@ def test_memoryview_read() -> None:
+     assert mem[:7] == b"0.234xx"
+ 
+ 
++def test_opaque() -> None:
++    frame = VideoFrame(640, 480, "rgb24")
++    frame.opaque = 3
++    assert frame.opaque == 3
++    frame.opaque = "a"
++    assert frame.opaque == "a"
++
++    greeting = "Hello World!"
++    frame.opaque = greeting
++    assert frame.opaque is greeting
++
++    frame.opaque = None
++    assert frame.opaque is None
++
++
+ def test_interpolation() -> None:
+     container = av.open(fate_png())
+     for _ in container.decode(video=0):
+-- 
+2.49.0
+

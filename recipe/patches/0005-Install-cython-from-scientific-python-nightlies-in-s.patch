@@ -1,0 +1,34 @@
+From 93a100548daacd7ec01824b106440856f08bb153 Mon Sep 17 00:00:00 2001
+From: Nathan Goldbaum <nathan.goldbaum@gmail.com>
+Date: Wed, 16 Jul 2025 12:24:18 -0600
+Subject: [PATCH 05/13] Install cython from scientific-python nightlies in
+ smoke tests
+
+---
+ .github/workflows/smoke.yml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/.github/workflows/smoke.yml b/.github/workflows/smoke.yml
+index e83adf6..d6637ce 100644
+--- a/.github/workflows/smoke.yml
++++ b/.github/workflows/smoke.yml
+@@ -127,14 +127,14 @@ jobs:
+           pillow \
+           pytest \
+           python=${{ matrix.config.python }} \
+-          setuptools
++          setuptools \
++          cython
+ 
+     - name: Build
+       shell: bash
+       run: |
+         . $CONDA/etc/profile.d/conda.sh
+         conda activate pyav
+-        pip install 'Cython==3.1.0a1'
+         python scripts\\fetch-vendor.py --config-file scripts\\ffmpeg-${{ matrix.config.ffmpeg }}.json $CONDA_PREFIX\\Library
+         python scripts\\comptime.py  ${{ matrix.config.ffmpeg }}
+         python setup.py build_ext --inplace --ffmpeg-dir=$CONDA_PREFIX\\Library
+-- 
+2.49.0
+

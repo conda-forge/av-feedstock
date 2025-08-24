@@ -1,0 +1,399 @@
+From 3de331d5621a1d491ba0d45fc1a096c7cbaa10d6 Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Mon, 4 Aug 2025 17:19:32 -0400
+Subject: [PATCH 10/13] Combine pad and link
+
+---
+ av/filter/context.pyi |  4 --
+ av/filter/context.pyx |  2 +-
+ av/filter/filter.pyi  |  5 ---
+ av/filter/filter.pyx  |  2 +-
+ av/filter/link.pxd    | 20 +++++++++-
+ av/filter/link.pyi    |  5 +--
+ av/filter/link.pyx    | 77 +++++++++++++++++++++++++++++++++++-
+ av/filter/pad.pxd     | 23 -----------
+ av/filter/pad.pyi     | 10 -----
+ av/filter/pad.pyx     | 90 -------------------------------------------
+ tests/test_filters.py |  6 ---
+ 11 files changed, 97 insertions(+), 147 deletions(-)
+ delete mode 100644 av/filter/pad.pxd
+ delete mode 100644 av/filter/pad.pyi
+ delete mode 100644 av/filter/pad.pyx
+
+diff --git a/av/filter/context.pyi b/av/filter/context.pyi
+index 7c00087..13ee480 100644
+--- a/av/filter/context.pyi
++++ b/av/filter/context.pyi
+@@ -1,12 +1,8 @@
+ from av.filter import Graph
+ from av.frame import Frame
+ 
+-from .pad import FilterContextPad
+-
+ class FilterContext:
+     name: str | None
+-    inputs: tuple[FilterContextPad, ...]
+-    outputs: tuple[FilterContextPad, ...]
+ 
+     def init(self, args: str | None = None, **kwargs: str | None) -> None: ...
+     def link_to(
+diff --git a/av/filter/context.pyx b/av/filter/context.pyx
+index b820d3d..ba5981f 100644
+--- a/av/filter/context.pyx
++++ b/av/filter/context.pyx
+@@ -4,7 +4,7 @@ from av.audio.frame cimport alloc_audio_frame
+ from av.dictionary cimport _Dictionary
+ from av.dictionary import Dictionary
+ from av.error cimport err_check
+-from av.filter.pad cimport alloc_filter_pads
++from av.filter.link cimport alloc_filter_pads
+ from av.frame cimport Frame
+ from av.utils cimport avrational_to_fraction
+ from av.video.frame cimport alloc_video_frame
+diff --git a/av/filter/filter.pyi b/av/filter/filter.pyi
+index 2751e97..42d9cd7 100644
+--- a/av/filter/filter.pyi
++++ b/av/filter/filter.pyi
+@@ -1,12 +1,9 @@
+ from av.descriptor import Descriptor
+ from av.option import Option
+ 
+-from .pad import FilterPad
+-
+ class Filter:
+     name: str
+     description: str
+-
+     descriptor: Descriptor
+     options: tuple[Option, ...] | None
+     flags: int
+@@ -15,8 +12,6 @@ class Filter:
+     timeline_support: bool
+     slice_threads: bool
+     command_support: bool
+-    inputs: tuple[FilterPad, ...]
+-    outputs: tuple[FilterPad, ...]
+ 
+     def __init__(self, name: str) -> None: ...
+ 
+diff --git a/av/filter/filter.pyx b/av/filter/filter.pyx
+index d4880dc..5f4963b 100644
+--- a/av/filter/filter.pyx
++++ b/av/filter/filter.pyx
+@@ -1,7 +1,7 @@
+ cimport libav as lib
+ 
+ from av.descriptor cimport wrap_avclass
+-from av.filter.pad cimport alloc_filter_pads
++from av.filter.link cimport alloc_filter_pads
+ 
+ 
+ cdef object _cinit_sentinel = object()
+diff --git a/av/filter/link.pxd b/av/filter/link.pxd
+index a6a4b1c..0877136 100644
+--- a/av/filter/link.pxd
++++ b/av/filter/link.pxd
+@@ -1,11 +1,12 @@
+ cimport libav as lib
+ 
++from av.filter.context cimport FilterContext
++from av.filter.filter cimport Filter
+ from av.filter.graph cimport Graph
+-from av.filter.pad cimport FilterContextPad
++from av.filter.link cimport FilterContextPad, FilterLink
+ 
+ 
+ cdef class FilterLink:
+-
+     cdef readonly Graph graph
+     cdef lib.AVFilterLink *ptr
+ 
+@@ -14,3 +15,18 @@ cdef class FilterLink:
+ 
+ 
+ cdef FilterLink wrap_filter_link(Graph graph, lib.AVFilterLink *ptr)
++
++cdef class FilterPad:
++    cdef readonly Filter filter
++    cdef readonly FilterContext context
++    cdef readonly bint is_input
++    cdef readonly int index
++
++    cdef const lib.AVFilterPad *base_ptr
++
++
++cdef class FilterContextPad(FilterPad):
++    cdef FilterLink _link
++
++
++cdef tuple alloc_filter_pads(Filter, const lib.AVFilterPad *ptr, bint is_input, FilterContext context=?)
+diff --git a/av/filter/link.pyi b/av/filter/link.pyi
+index dd420ad..9d199a2 100644
+--- a/av/filter/link.pyi
++++ b/av/filter/link.pyi
+@@ -1,5 +1,2 @@
+-from .pad import FilterContextPad
+-
+ class FilterLink:
+-    input: FilterContextPad
+-    output: FilterContextPad
++    pass
+diff --git a/av/filter/link.pyx b/av/filter/link.pyx
+index 78b7da3..905082d 100644
+--- a/av/filter/link.pyx
++++ b/av/filter/link.pyx
+@@ -7,7 +7,6 @@ cdef _cinit_sentinel = object()
+ 
+ 
+ cdef class FilterLink:
+-
+     def __cinit__(self, sentinel):
+         if sentinel is not _cinit_sentinel:
+             raise RuntimeError("cannot instantiate FilterLink")
+@@ -51,3 +50,79 @@ cdef FilterLink wrap_filter_link(Graph graph, lib.AVFilterLink *ptr):
+     link.graph = graph
+     link.ptr = ptr
+     return link
++
++
++
++cdef class FilterPad:
++    def __cinit__(self, sentinel):
++        if sentinel is not _cinit_sentinel:
++            raise RuntimeError("cannot construct FilterPad")
++
++    def __repr__(self):
++        _filter = self.filter.name
++        _io = "inputs" if self.is_input else "outputs"
++
++        return f"<av.FilterPad {_filter}.{_io}[{self.index}]: {self.name} ({self.type})>"
++
++    @property
++    def is_output(self):
++        return not self.is_input
++
++    @property
++    def name(self):
++        return lib.avfilter_pad_get_name(self.base_ptr, self.index)
++
++
++cdef class FilterContextPad(FilterPad):
++    def __repr__(self):
++        _filter = self.filter.name
++        _io = "inputs" if self.is_input else "outputs"
++        context = self.context.name
++
++        return f"<av.FilterContextPad {_filter}.{_io}[{self.index}] of {context}: {self.name} ({self.type})>"
++
++    @property
++    def link(self):
++        if self._link:
++            return self._link
++        cdef lib.AVFilterLink **links = self.context.ptr.inputs if self.is_input else self.context.ptr.outputs
++        cdef lib.AVFilterLink *link = links[self.index]
++        if not link:
++            return
++        self._link = wrap_filter_link(self.context.graph, link)
++        return self._link
++
++    @property
++    def linked(self):
++        cdef FilterLink link = self.link
++        if link:
++            return link.input if self.is_input else link.output
++
++
++cdef tuple alloc_filter_pads(Filter filter, const lib.AVFilterPad *ptr, bint is_input, FilterContext context=None):
++    if not ptr:
++        return ()
++
++    pads = []
++
++    # We need to be careful and check our bounds if we know what they are,
++    # since the arrays on a AVFilterContext are not NULL terminated.
++    cdef int i = 0
++    cdef int count
++    if context is None:
++        count = lib.avfilter_filter_pad_count(filter.ptr, not is_input)
++    else:
++        count = (context.ptr.nb_inputs if is_input else context.ptr.nb_outputs)
++
++    cdef FilterPad pad
++    while (i < count):
++        pad = FilterPad(_cinit_sentinel) if context is None else FilterContextPad(_cinit_sentinel)
++        pads.append(pad)
++        pad.filter = filter
++        pad.context = context
++        pad.is_input = is_input
++        pad.base_ptr = ptr
++        pad.index = i
++        i += 1
++
++    return tuple(pads)
+diff --git a/av/filter/pad.pxd b/av/filter/pad.pxd
+deleted file mode 100644
+index 15ac950..0000000
+--- a/av/filter/pad.pxd
++++ /dev/null
+@@ -1,23 +0,0 @@
+-cimport libav as lib
+-
+-from av.filter.context cimport FilterContext
+-from av.filter.filter cimport Filter
+-from av.filter.link cimport FilterLink
+-
+-
+-cdef class FilterPad:
+-
+-    cdef readonly Filter filter
+-    cdef readonly FilterContext context
+-    cdef readonly bint is_input
+-    cdef readonly int index
+-
+-    cdef const lib.AVFilterPad *base_ptr
+-
+-
+-cdef class FilterContextPad(FilterPad):
+-
+-    cdef FilterLink _link
+-
+-
+-cdef tuple alloc_filter_pads(Filter, const lib.AVFilterPad *ptr, bint is_input, FilterContext context=?)
+diff --git a/av/filter/pad.pyi b/av/filter/pad.pyi
+deleted file mode 100644
+index 1a6c9bd..0000000
+--- a/av/filter/pad.pyi
++++ /dev/null
+@@ -1,10 +0,0 @@
+-from .link import FilterLink
+-
+-class FilterPad:
+-    is_output: bool
+-    name: str
+-    type: str
+-
+-class FilterContextPad(FilterPad):
+-    link: FilterLink | None
+-    linked: FilterContextPad | None
+diff --git a/av/filter/pad.pyx b/av/filter/pad.pyx
+deleted file mode 100644
+index cf889ea..0000000
+--- a/av/filter/pad.pyx
++++ /dev/null
+@@ -1,90 +0,0 @@
+-from av.filter.link cimport wrap_filter_link
+-
+-
+-cdef object _cinit_sentinel = object()
+-
+-
+-cdef class FilterPad:
+-    def __cinit__(self, sentinel):
+-        if sentinel is not _cinit_sentinel:
+-            raise RuntimeError("cannot construct FilterPad")
+-
+-    def __repr__(self):
+-        _filter = self.filter.name
+-        _io = "inputs" if self.is_input else "outputs"
+-
+-        return f"<av.FilterPad {_filter}.{_io}[{self.index}]: {self.name} ({self.type})>"
+-
+-    @property
+-    def is_output(self):
+-        return not self.is_input
+-
+-    @property
+-    def name(self):
+-        return lib.avfilter_pad_get_name(self.base_ptr, self.index)
+-
+-    @property
+-    def type(self):
+-        """
+-        The media type of this filter pad.
+-
+-        Examples: `'audio'`, `'video'`, `'subtitle'`.
+-
+-        :type: str
+-        """
+-        return lib.av_get_media_type_string(lib.avfilter_pad_get_type(self.base_ptr, self.index))
+-
+-
+-cdef class FilterContextPad(FilterPad):
+-    def __repr__(self):
+-        _filter = self.filter.name
+-        _io = "inputs" if self.is_input else "outputs"
+-        context = self.context.name
+-
+-        return f"<av.FilterContextPad {_filter}.{_io}[{self.index}] of {context}: {self.name} ({self.type})>"
+-
+-    @property
+-    def link(self):
+-        if self._link:
+-            return self._link
+-        cdef lib.AVFilterLink **links = self.context.ptr.inputs if self.is_input else self.context.ptr.outputs
+-        cdef lib.AVFilterLink *link = links[self.index]
+-        if not link:
+-            return
+-        self._link = wrap_filter_link(self.context.graph, link)
+-        return self._link
+-
+-    @property
+-    def linked(self):
+-        cdef FilterLink link = self.link
+-        if link:
+-            return link.input if self.is_input else link.output
+-
+-
+-cdef tuple alloc_filter_pads(Filter filter, const lib.AVFilterPad *ptr, bint is_input, FilterContext context=None):
+-    if not ptr:
+-        return ()
+-
+-    pads = []
+-
+-    # We need to be careful and check our bounds if we know what they are,
+-    # since the arrays on a AVFilterContext are not NULL terminated.
+-    cdef int i = 0
+-    cdef int count
+-    if context is None:
+-        count = lib.avfilter_filter_pad_count(filter.ptr, not is_input)
+-    else:
+-        count = (context.ptr.nb_inputs if is_input else context.ptr.nb_outputs)
+-
+-    cdef FilterPad pad
+-    while (i < count):
+-        pad = FilterPad(_cinit_sentinel) if context is None else FilterContextPad(_cinit_sentinel)
+-        pads.append(pad)
+-        pad.filter = filter
+-        pad.context = context
+-        pad.is_input = is_input
+-        pad.base_ptr = ptr
+-        pad.index = i
+-        i += 1
+-
+-    return tuple(pads)
+diff --git a/tests/test_filters.py b/tests/test_filters.py
+index 7722de7..886c22a 100644
+--- a/tests/test_filters.py
++++ b/tests/test_filters.py
+@@ -51,18 +51,12 @@ class TestFilters(TestCase):
+         assert f.name == "testsrc"
+         assert f.description == "Generate test pattern."
+         assert not f.dynamic_inputs
+-        assert len(f.inputs) == 0
+         assert not f.dynamic_outputs
+-        assert len(f.outputs) == 1
+-        assert f.outputs[0].name == "default"
+-        assert f.outputs[0].type == "video"
+ 
+     def test_dynamic_filter_descriptor(self):
+         f = Filter("split")
+         assert not f.dynamic_inputs
+-        assert len(f.inputs) == 1
+         assert f.dynamic_outputs
+-        assert len(f.outputs) == 0
+ 
+     def test_generator_graph(self):
+         graph = Graph()
+-- 
+2.49.0
+
