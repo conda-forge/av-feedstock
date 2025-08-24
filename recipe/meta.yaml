@@ -12,7 +12,7 @@ source:
     - patches/remove_checks_in_setup.patch
 
 build:
-  number: 0
+  number: 1
   script:
     - {{ PYTHON }} -m pip install . -vv
   run_exports:
