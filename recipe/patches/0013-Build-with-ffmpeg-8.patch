@@ -4,7 +4,6 @@ Date: Sat, 23 Aug 2025 12:23:26 -0400
 Subject: [PATCH 13/13] Build with ffmpeg 8
 
 ---
- .github/workflows/smoke.yml                  |  8 ++++----
  av/codec/codec.pyx                           |  1 -
  av/codec/context.pyx                         |  6 +++---
  av/container/core.pyx                        |  1 -
@@ -14,37 +13,8 @@ Subject: [PATCH 13/13] Build with ffmpeg 8
  include/libavcodec/avcodec.pxd               | 10 +++-------
  include/libavfilter/avfilter.pxd             |  8 ++------
  include/libavformat/avformat.pxd             |  2 --
- scripts/activate.sh                          |  2 +-
- scripts/{ffmpeg-7.0.json => ffmpeg-8.0.json} |  4 ++--
  12 files changed, 15 insertions(+), 33 deletions(-)
- rename scripts/{ffmpeg-7.0.json => ffmpeg-8.0.json} (61%)
 
-diff --git a/.github/workflows/smoke.yml b/.github/workflows/smoke.yml
-index d6637ce..3c355a9 100644
---- a/.github/workflows/smoke.yml
-+++ b/.github/workflows/smoke.yml
-@@ -34,9 +34,9 @@ jobs:
-       fail-fast: false
-       matrix:
-         config:
--          - {os: ubuntu-24.04, python: "3.12", ffmpeg: "7.1.1", extras: true}
--          - {os: ubuntu-24.04, python: "pypy3.10", ffmpeg: "7.1.1"}
--          - {os: macos-14, python: "3.9", ffmpeg: "7.1.1"}
-+          - {os: ubuntu-24.04, python: "3.12", ffmpeg: "8.0", extras: true}
-+          - {os: ubuntu-24.04, python: "pypy3.10", ffmpeg: "8.0"}
-+          - {os: macos-14, python: "3.9", ffmpeg: "8.0"}
- 
-     env:
-       PYAV_PYTHON: python${{ matrix.config.python }}
-@@ -109,7 +109,7 @@ jobs:
-       fail-fast: false
-       matrix:
-         config:
--          - {os: windows-latest, python: "3.9", ffmpeg: "7.1"}
-+          - {os: windows-latest, python: "3.9", ffmpeg: "8.0"}
- 
-     steps:
-     - name: Checkout
 diff --git a/av/codec/codec.pyx b/av/codec/codec.pyx
 index a28db75..aeab61c 100644
 --- a/av/codec/codec.pyx
@@ -221,33 +191,4 @@ index 6c23e99..09eede8 100644
          AVFMT_FLAG_AUTO_BSF
  
      cdef int av_probe_input_buffer(
-diff --git a/scripts/activate.sh b/scripts/activate.sh
-index ab22d79..81240ca 100755
---- a/scripts/activate.sh
-+++ b/scripts/activate.sh
-@@ -21,7 +21,7 @@ if [[ ! "$PYAV_LIBRARY" ]]; then
-             return 1
-         fi
-     else
--        PYAV_LIBRARY=ffmpeg-7.1.1
-+        PYAV_LIBRARY=ffmpeg-8.0
-         echo "No \$PYAV_LIBRARY set; defaulting to $PYAV_LIBRARY"
-     fi
- fi
-diff --git a/scripts/ffmpeg-7.0.json b/scripts/ffmpeg-8.0.json
-similarity index 61%
-rename from scripts/ffmpeg-7.0.json
-rename to scripts/ffmpeg-8.0.json
-index 6cbe76b..915f5bf 100644
---- a/scripts/ffmpeg-7.0.json
-+++ b/scripts/ffmpeg-8.0.json
-@@ -1,3 +1,3 @@
- {
--    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/7.0.2-1/ffmpeg-{platform}.tar.gz"
--}
-\ No newline at end of file
-+    "url": "https://github.com/PyAV-Org/pyav-ffmpeg/releases/download/8.0-1/ffmpeg-{platform}.tar.gz"
-+}
--- 
-2.49.0
 
