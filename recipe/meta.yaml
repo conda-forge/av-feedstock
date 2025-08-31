@@ -1,4 +1,4 @@
-{% set version = "15.0.0" %}
+{% set version = "15.1.0" %}
 
 package:
   name: av
@@ -6,10 +6,9 @@ package:
 
 source:
   url: https://pypi.org/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 871c1a9becddf00b60b1294dc0bff9ff193ac31286aeec1a34039bd27e650183
+  sha256: 39cda2dc810e11c1938f8cb5759c41d6b630550236b3365790e67a313660ec85
   patches:
-    - patches/lgpl_tests.patch
-    - patches/remove_checks_in_setup.patch
+    - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
 
 build:
   number: 0
@@ -34,7 +33,7 @@ requirements:
     - setuptools
     - cython
     - numpy
-    - ffmpeg  {{ ffmpeg }}=lgpl*
+    - ffmpeg {{ ffmpeg }} lgpl*
   run:
     - python
     - pillow
@@ -56,8 +55,8 @@ test:
   requires:
     # The compiled pyav should be compatibile with both the GPL version of
     # ffpmpeg and the lgpl version of ffmpeg
-    - ffmpeg *=gpl*    # [py==311]
-    - ffmpeg *=lgpl*   # [py==312]
+    - ffmpeg * gpl*    # [py==311]
+    - ffmpeg * lgpl*   # [py==312]
     - pytest
   commands:
     # With the GPL version, x264 and x265 should be available

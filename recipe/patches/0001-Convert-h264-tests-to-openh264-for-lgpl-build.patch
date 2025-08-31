@@ -1,0 +1,52 @@
+From 797aff84b48f6d34a5f3c5298b3bc83ef2edc259 Mon Sep 17 00:00:00 2001
+From: Mark Harfouche <mark.harfouche@gmail.com>
+Date: Thu, 21 Mar 2024 08:57:12 -0400
+Subject: [PATCH] Convert h264 tests to openh264 for lgpl build
+
+---
+ tests/test_codec_context.py | 11 +++++++----
+ tests/test_encode.py        |  2 +-
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/tests/test_codec_context.py b/tests/test_codec_context.py
+index 1173a58..7fce158 100644
+--- a/tests/test_codec_context.py
++++ b/tests/test_codec_context.py
+@@ -278,8 +278,8 @@ class TestEncoding(TestCase):
+                 assert frame.height == height
+                 assert frame.format.name == pix_fmt
+ 
+-    def test_encoding_h264(self) -> None:
+-        self.video_encoding("h264", {"crf": "19"})
++    def test_encoding_libopenh264(self):
++        self.video_encoding("libopenh264", {"crf": "19"})
+ 
+     def test_encoding_mpeg4(self) -> None:
+         self.video_encoding("mpeg4")
+@@ -395,8 +395,11 @@ class TestEncoding(TestCase):
+         for i in decoded_gop_sizes:
+             assert i == gop_size
+ 
+-        final_gop_size = decoded_frame_count - max(keyframe_indices)
+-        assert final_gop_size < gop_size
++        # libopenh264 only supports a reduced subset of the features and
++        # can't actually control GOP size correctly
++        if codec_name != "libopenh264":
++            final_gop_size = decoded_frame_count - max(keyframe_indices)
++            self.assertLessEqual(final_gop_size, gop_size)
+ 
+     def test_encoding_pcm_s24le(self) -> None:
+         self.audio_encoding("pcm_s24le")
+diff --git a/tests/test_encode.py b/tests/test_encode.py
+index 9284a9c..4352a0a 100644
+--- a/tests/test_encode.py
++++ b/tests/test_encode.py
+@@ -141,7 +141,7 @@ class TestBasicVideoEncoding(TestCase):
+         path = self.sandboxed("video_with_pts.mov")
+ 
+         with av.open(path, "w") as output:
+-            stream = output.add_stream("h264", 24)
++            stream = output.add_stream("libopenh264", 24)
+             assert stream in output.streams.video
+             stream.width = WIDTH
+             stream.height = HEIGHT
