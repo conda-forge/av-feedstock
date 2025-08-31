@@ -338,6 +338,3 @@ Feedstock Maintainers
 * [@mikeboers](https://github.com/mikeboers/)
 * [@sdvillal](https://github.com/sdvillal/)
 
-
-<!-- dummy commit to enable rerendering -->
-
