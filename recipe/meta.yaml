@@ -33,7 +33,7 @@ requirements:
     - setuptools
     - cython
     - numpy
-    - ffmpeg  {{ ffmpeg }}=lgpl*
+    - ffmpeg {{ ffmpeg }} lgpl*
   run:
     - python
     - pillow
@@ -55,8 +55,8 @@ test:
   requires:
     # The compiled pyav should be compatibile with both the GPL version of
     # ffpmpeg and the lgpl version of ffmpeg
-    - ffmpeg *=gpl*    # [py==311]
-    - ffmpeg *=lgpl*   # [py==312]
+    - ffmpeg * gpl*    # [py==311]
+    - ffmpeg * lgpl*   # [py==312]
     - pytest
   commands:
     # With the GPL version, x264 and x265 should be available
