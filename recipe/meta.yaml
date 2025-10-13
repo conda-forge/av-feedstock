@@ -1,4 +1,4 @@
-{% set version = "15.1.0" %}
+{% set version = "16.0.1" %}
 
 package:
   name: av
@@ -6,12 +6,12 @@ package:
 
 source:
   url: https://pypi.org/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 39cda2dc810e11c1938f8cb5759c41d6b630550236b3365790e67a313660ec85
+  sha256: dd2ce779fa0b5f5889a6d9e00fbbbc39f58e247e52d31044272648fe16ff1dbf
   patches:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
 
 build:
-  number: 1
+  number: 0
   script:
     - {{ PYTHON }} -m pip install . -vv
   run_exports:
