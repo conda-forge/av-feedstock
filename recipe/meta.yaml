@@ -11,7 +11,7 @@ source:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
 
 build:
-  number: 0
+  number: 1
   script:
     - {{ PYTHON }} -m pip install . -vv
   run_exports:
