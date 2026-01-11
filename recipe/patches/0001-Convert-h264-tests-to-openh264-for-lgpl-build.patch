@@ -1,12 +1,13 @@
-From 797aff84b48f6d34a5f3c5298b3bc83ef2edc259 Mon Sep 17 00:00:00 2001
+From cd507dfe647661e3c5b7d9a3d33165497d8d10bb Mon Sep 17 00:00:00 2001
 From: Mark Harfouche <mark.harfouche@gmail.com>
 Date: Thu, 21 Mar 2024 08:57:12 -0400
-Subject: [PATCH] Convert h264 tests to openh264 for lgpl build
+Subject: [PATCH 1/2] Convert h264 tests to openh264 for lgpl build
 
 ---
  tests/test_codec_context.py | 11 +++++++----
  tests/test_encode.py        |  2 +-
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ tests/test_subtitles.py     |  2 +-
+ 3 files changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/tests/test_codec_context.py b/tests/test_codec_context.py
 index 1173a58..7fce158 100644
@@ -38,7 +39,7 @@ index 1173a58..7fce158 100644
      def test_encoding_pcm_s24le(self) -> None:
          self.audio_encoding("pcm_s24le")
 diff --git a/tests/test_encode.py b/tests/test_encode.py
-index 9284a9c..4352a0a 100644
+index d64cadc..01afa19 100644
 --- a/tests/test_encode.py
 +++ b/tests/test_encode.py
 @@ -141,7 +141,7 @@ class TestBasicVideoEncoding(TestCase):
@@ -50,3 +51,19 @@ index 9284a9c..4352a0a 100644
              assert stream in output.streams.video
              stream.width = WIDTH
              stream.height = HEIGHT
+diff --git a/tests/test_subtitles.py b/tests/test_subtitles.py
+index d2a1999..4ce756b 100644
+--- a/tests/test_subtitles.py
++++ b/tests/test_subtitles.py
+@@ -139,7 +139,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+         output = io.BytesIO()
+         with av.open(output, "w", format="mp4") as container:
+             # MP4 requires video for subtitles
+-            video_stream = container.add_stream("libx264", rate=30)
++            video_stream = container.add_stream("libopenh264", rate=30)
+             video_stream.width = 640
+             video_stream.height = 480
+             video_stream.pix_fmt = "yuv420p"
+-- 
+2.51.0
+
