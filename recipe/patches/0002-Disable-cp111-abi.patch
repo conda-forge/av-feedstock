@@ -1,24 +1,25 @@
-From 5bfaf05b91bf9de65bc14ef7fa1dc7ca58996a07 Mon Sep 17 00:00:00 2001
+From 6021715a06e5008fbd585d0ab97e02913e7851fd Mon Sep 17 00:00:00 2001
 From: Mark Harfouche <mark.harfouche@gmail.com>
-Date: Sun, 11 Jan 2026 16:32:18 -0500
-Subject: [PATCH 2/2] Disable cp111 abi
+Date: Sat, 14 Mar 2026 12:49:57 -0400
+Subject: [PATCH] Disable cp111 abi
 
 ---
  setup.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/setup.py b/setup.py
-index 9be9acb..eca3416 100644
+index 0e00f98..697a5c1 100644
 --- a/setup.py
 +++ b/setup.py
 @@ -21,7 +21,7 @@ FFMPEG_LIBRARIES = [
      "swresample",
  ]
  
--if sys.implementation.name == "cpython":
-+if False and sys.implementation.name == "cpython":
+-if sys.implementation.name == "cpython" and (3, 14) > sys.version_info > (3, 11):
++if False and sys.implementation.name == "cpython" and (3, 14) > sys.version_info > (3, 11):
      py_limited_api = True
      options = {"bdist_wheel": {"py_limited_api": "cp311"}}
      define_macros = [("Py_LIMITED_API", 0x030B0000)]
 -- 
 2.51.0
+
