@@ -1,4 +1,4 @@
-{% set version = "17.1.0" %}
+{% set version = "18.0.0" %}
 
 package:
   name: av
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 7f1e71ff621b66253333926f948e00faae11d855b2442133c65128bca64cdeb3
+  sha256: 4ef7e72c3d3a872584a1215173b16e0226811037f40dcdbf75992631098df1ba
   patches:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
     - patches/0002-Disable-cp111-abi.patch
