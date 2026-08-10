@@ -12,7 +12,7 @@ source:
     - patches/0002-Disable-cp111-abi.patch
 
 build:
-  number: 0
+  number: 1
   # https://github.com/PyAV-Org/PyAV/blob/main/pyproject.toml#L13
   skip: true  # [py<311]
   script:
