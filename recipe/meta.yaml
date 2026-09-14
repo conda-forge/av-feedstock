@@ -10,9 +10,10 @@ source:
   patches:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
     - patches/0002-Disable-cp111-abi.patch
+    - patches/0003-Run-doctests-via-debug-for-python-3.15.patch
 
 build:
-  number: 0
+  number: 1
   # https://github.com/PyAV-Org/PyAV/blob/main/pyproject.toml#L13
   skip: true  # [py<311]
   script:

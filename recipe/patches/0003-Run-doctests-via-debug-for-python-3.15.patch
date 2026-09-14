@@ -1,0 +1,33 @@
+From cc0cef046aeff26f2bacc35bc3a2080d2ded8a20 Mon Sep 17 00:00:00 2001
+From: Mark Harfouche <mark.harfouche@gmail.com>
+Date: Fri, 11 Sep 2026 09:02:03 -0400
+Subject: [PATCH] Run doctests via DocTestCase.debug() for Python 3.15
+
+CPython 3.15 (gh-108885, python/cpython@ad39f017881e0bd8ffd809755ebf76380b928ad3)
+reports doctest examples as unittest subtests. DocTestCase.runTest() now
+reads self._test_result, which is only set by DocTestCase.run(result), so
+calling runTest() directly raises
+AttributeError: 'DocTestCase' object has no attribute '_test_result'.
+
+debug() runs the examples without needing a result object and raises on
+the first failing example, on every supported Python version.
+---
+ tests/test_doctests.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/test_doctests.py b/tests/test_doctests.py
+index 6322088..ab6079c 100644
+--- a/tests/test_doctests.py
++++ b/tests/test_doctests.py
+@@ -45,7 +45,7 @@ def register_doctests(mod):
+     for test in suite._tests:
+ 
+         def func(self):
+-            return test.runTest()
++            return test.debug()
+ 
+         name = str("test_" + re.sub("[^a-zA-Z0-9]+", "_", test.id()).strip("_"))
+         func.__name__ = name
+-- 
+2.55.0
+
