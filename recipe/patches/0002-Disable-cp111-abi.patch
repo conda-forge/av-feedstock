@@ -8,18 +8,17 @@ Subject: [PATCH] Disable cp111 abi
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/setup.py b/setup.py
-index 0e00f98..697a5c1 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -21,7 +21,7 @@ FFMPEG_LIBRARIES = [
+@@ -21,7 +21,7 @@
      "swresample",
  ]
  
--if sys.implementation.name == "cpython" and (3, 14) > sys.version_info > (3, 11):
-+if False and sys.implementation.name == "cpython" and (3, 14) > sys.version_info > (3, 11):
+-if sys.implementation.name == "cpython" and (3, 14) > sys.version_info >= (3, 12):
++if False and sys.implementation.name == "cpython" and (3, 14) > sys.version_info >= (3, 12):
      py_limited_api = True
-     options = {"bdist_wheel": {"py_limited_api": "cp311"}}
-     define_macros = [("Py_LIMITED_API", 0x030B0000)]
+     options = {"bdist_wheel": {"py_limited_api": "cp312"}}
+     define_macros = [("Py_LIMITED_API", 0x030C0000)]
 -- 
 2.51.0
 

@@ -4,16 +4,10 @@ Date: Thu, 21 Mar 2024 08:57:12 -0400
 Subject: [PATCH 1/2] Convert h264 tests to openh264 for lgpl build
 
 ---
- tests/test_codec_context.py | 11 +++++++----
- tests/test_encode.py        |  2 +-
- tests/test_subtitles.py     |  2 +-
- 3 files changed, 9 insertions(+), 6 deletions(-)
-
 diff --git a/tests/test_codec_context.py b/tests/test_codec_context.py
-index 1173a58..7fce158 100644
 --- a/tests/test_codec_context.py
 +++ b/tests/test_codec_context.py
-@@ -278,8 +278,8 @@ class TestEncoding(TestCase):
+@@ -419,8 +419,8 @@
                  assert frame.height == height
                  assert frame.format.name == pix_fmt
  
@@ -24,7 +18,7 @@ index 1173a58..7fce158 100644
  
      def test_encoding_mpeg4(self) -> None:
          self.video_encoding("mpeg4")
-@@ -395,8 +395,11 @@ class TestEncoding(TestCase):
+@@ -536,8 +536,11 @@
          for i in decoded_gop_sizes:
              assert i == gop_size
  
@@ -38,11 +32,35 @@ index 1173a58..7fce158 100644
  
      def test_encoding_pcm_s24le(self) -> None:
          self.audio_encoding("pcm_s24le")
+@@ -621,7 +624,7 @@
+ 
+ class TestNewlyExposedFields(TestCase):
+     def test_encoder_scalars_roundtrip(self) -> None:
+-        ctx = av.CodecContext.create("libx264", "w")
++        ctx = av.CodecContext.create("libopenh264", "w")
+         assert isinstance(ctx, av.video.codeccontext.VideoCodecContext)
+ 
+         ctx.bit_rate_tolerance = 4000
+@@ -650,12 +653,12 @@
+         assert ctx.frame_num == 0
+ 
+     def test_stats_in_rejects_junk(self) -> None:
+-        ctx = av.CodecContext.create("libx264", "w")
++        ctx = av.CodecContext.create("libopenh264", "w")
+         with pytest.raises(TypeError):
+             ctx.stats_in = 5  # type: ignore[assignment]
+ 
+     def test_stats_in_out(self) -> None:
+-        ctx = av.CodecContext.create("libx264", "w")
++        ctx = av.CodecContext.create("libopenh264", "w")
+         assert ctx.stats_in is None
+         assert ctx.stats_out is None
+ 
+Only in b/tests: test_codec_context.py.orig
 diff --git a/tests/test_encode.py b/tests/test_encode.py
-index d64cadc..01afa19 100644
 --- a/tests/test_encode.py
 +++ b/tests/test_encode.py
-@@ -141,7 +141,7 @@ class TestBasicVideoEncoding(TestCase):
+@@ -143,7 +143,7 @@
          path = self.sandboxed("video_with_pts.mov")
  
          with av.open(path, "w") as output:
@@ -51,11 +69,11 @@ index d64cadc..01afa19 100644
              assert stream in output.streams.video
              stream.width = WIDTH
              stream.height = HEIGHT
+Only in b/tests: test_encode.py.orig
 diff --git a/tests/test_subtitles.py b/tests/test_subtitles.py
-index d2a1999..4ce756b 100644
 --- a/tests/test_subtitles.py
 +++ b/tests/test_subtitles.py
-@@ -139,7 +139,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+@@ -148,7 +148,7 @@
          output = io.BytesIO()
          with av.open(output, "w", format="mp4") as container:
              # MP4 requires video for subtitles
@@ -64,6 +82,7 @@ index d2a1999..4ce756b 100644
              video_stream.width = 640
              video_stream.height = 480
              video_stream.pix_fmt = "yuv420p"
+Only in b/tests: test_subtitles.py.orig
 -- 
 2.51.0
 
