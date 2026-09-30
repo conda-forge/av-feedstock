@@ -1,0 +1,88 @@
+From b348aac3926b959edbfc08ee2123b22c117f48fe Mon Sep 17 00:00:00 2001
+From: WyattBlue <wyattblue@auto-editor.com>
+Date: Wed, 30 Sep 2026 17:27:30 -0400
+Subject: [PATCH] Make Stream.index_entries a property (fixes #2425)
+
+Stream.index_entries was allocated in Stream._init and held a reference
+back to the stream, putting every Stream in a reference cycle so __del__
+only ran when the cyclic gc collected it.
+
+https://github.com/PyAV-Org/PyAV/issues/2425
+
+Backported from upstream PyAV commit (post v19.0.0), with the
+CHANGELOG.rst and av/about.py version bump hunks dropped:
+https://github.com/PyAV-Org/PyAV/commit/b348aac3926b959edbfc08ee2123b22c117f48fe
+---
+ av/stream.pxd | 9 ---------
+ av/stream.py  | 5 ++++-
+ av/stream.pyi | 3 ++-
+ 3 files changed, 6 insertions(+), 11 deletions(-)
+
+diff --git a/av/stream.pxd b/av/stream.pxd
+index 755d194..6d571a9 100644
+--- a/av/stream.pxd
++++ b/av/stream.pxd
+@@ -3,23 +3,14 @@ cimport libav as lib
+ from av.codec.context cimport CodecContext
+ from av.container.core cimport Container
+ from av.frame cimport Frame
+-from av.index cimport IndexEntries
+ from av.packet cimport Packet
+ 
+ 
+ cdef class Stream:
+     cdef lib.AVStream *ptr
+-
+-    # Stream attributes.
+     cdef readonly Container container
+     cdef readonly dict metadata
+-
+-    # CodecContext attributes.
+     cdef readonly CodecContext codec_context
+-
+-    cdef readonly IndexEntries index_entries
+-
+-    # Private API.
+     cdef void _init(self, Container, lib.AVStream*, CodecContext)
+     cdef bint _is_open(self)
+     cdef void _assert_open(self)
+diff --git a/av/stream.py b/av/stream.py
+index f5bcfa1..684797e 100644
+--- a/av/stream.py
++++ b/av/stream.py
+@@ -116,7 +116,6 @@ class Stream:
+     ) -> cython.void:
+         self.container = container
+         self.ptr = stream
+-        self.index_entries = wrap_index_entries(self)
+ 
+         self.codec_context = codec_context
+ 
+@@ -187,6 +186,10 @@ class Stream:
+             )
+         )
+ 
++    @property
++    def index_entries(self):
++        return wrap_index_entries(self)
++
+     @property
+     def id(self):
+         """
+diff --git a/av/stream.pyi b/av/stream.pyi
+index 59485a6..bbbdbbc 100644
+--- a/av/stream.pyi
++++ b/av/stream.pyi
+@@ -44,7 +44,8 @@ class Stream:
+     codec: Codec
+     codec_context: CodecContext
+     metadata: dict[str, str]
+-    index_entries: IndexEntries
++    @property
++    def index_entries(self) -> IndexEntries: ...
+     id: int
+     profiles: list[str]
+     profile: str | None
+-- 
+2.55.0
+
