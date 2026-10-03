@@ -1,4 +1,4 @@
-{% set version = "19.0.0" %}
+{% set version = "19.0.1" %}
 
 package:
   name: av
@@ -6,20 +6,14 @@ package:
 
 source:
   url: https://files.pythonhosted.org/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: f04d31a42570cb8ec8216569b94491e91848cdac2ac8e7591c6141fda6cc86ee
+  sha256: 08674930eaf1af78a3ed8f93d3ba49383323b3a867e84349d9c399e36f7497da
   patches:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
     - patches/0002-Disable-cp111-abi.patch
     - patches/0003-Run-doctests-via-debug-for-python-3.15.patch
-    # Reference-cycle fixes merged upstream after v19.0.0; drop for v19.0.1
-    # https://github.com/PyAV-Org/PyAV/issues/2425
-    # https://github.com/PyAV-Org/PyAV/commit/b348aac3926b959edbfc08ee2123b22c117f48fe
-    - patches/0004-Make-Stream-index_entries-a-property.patch
-    # https://github.com/PyAV-Org/PyAV/commit/b618b2d9802cb8c4ac368ff97fc2873de05aab89
-    - patches/0005-Stop-side-data-holding-its-frame-in-a-reference-cycle.patch
 
 build:
-  number: 1
+  number: 0
   # https://github.com/PyAV-Org/PyAV/blob/main/pyproject.toml#L13
   skip: true  # [py<312]
   script:
