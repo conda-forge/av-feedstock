@@ -11,12 +11,6 @@ source:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
     - patches/0002-Disable-cp111-abi.patch
     - patches/0003-Run-doctests-via-debug-for-python-3.15.patch
-    # Reference-cycle fixes merged upstream after v19.0.0; drop for v19.0.1
-    # https://github.com/PyAV-Org/PyAV/issues/2425
-    # https://github.com/PyAV-Org/PyAV/commit/b348aac3926b959edbfc08ee2123b22c117f48fe
-    - patches/0004-Make-Stream-index_entries-a-property.patch
-    # https://github.com/PyAV-Org/PyAV/commit/b618b2d9802cb8c4ac368ff97fc2873de05aab89
-    - patches/0005-Stop-side-data-holding-its-frame-in-a-reference-cycle.patch
 
 build:
   number: 0
