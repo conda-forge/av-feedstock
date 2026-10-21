@@ -1,4 +1,4 @@
-{% set version = "19.0.1" %}
+{% set version = "19.0.2" %}
 
 package:
   name: av
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://files.pythonhosted.org/packages/source/a/av/av-{{ version }}.tar.gz
-  sha256: 08674930eaf1af78a3ed8f93d3ba49383323b3a867e84349d9c399e36f7497da
+  sha256: bebbc52598886480f4d861c575dc2b020785d6c04e1308680ddcc545e1b94c66
   patches:
     - patches/0001-Convert-h264-tests-to-openh264-for-lgpl-build.patch
     - patches/0002-Disable-cp111-abi.patch
@@ -52,6 +52,11 @@ requirements:
 # Seems like this test fails with aarch... but only with the gpl variant... i can't
 # figure it out .... hmaarrffk 2025/03
 {% set tests_to_skip = tests_to_skip + " or test_generator_graph" %}              # [aarch64]
+
+# These download FATE samples at test time and flake on CI DNS failures
+# (URLError: Name or service not known) - hmaarrfk 2026/10
+{% set tests_to_skip = tests_to_skip + " or test_video_plane_dlpack_export_keeps_frame_alive_after_gc" %}
+{% set tests_to_skip = tests_to_skip + " or test_subtitle_muxing" %}
 
 test:
   source_files:
