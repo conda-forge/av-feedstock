@@ -53,6 +53,11 @@ requirements:
 # figure it out .... hmaarrffk 2025/03
 {% set tests_to_skip = tests_to_skip + " or test_generator_graph" %}              # [aarch64]
 
+# These download FATE samples at test time and flake on CI DNS failures
+# (URLError: Name or service not known) - hmaarrfk 2026/10
+{% set tests_to_skip = tests_to_skip + " or test_video_plane_dlpack_export_keeps_frame_alive_after_gc" %}
+{% set tests_to_skip = tests_to_skip + " or test_subtitle_muxing" %}
+
 test:
   source_files:
     - tests
